@@ -3,20 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ETH Signal Bot</title>
+<title>ETH Signal Bot v2</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&display=swap');
 
   :root {
-    --bg: #050a0e;
-    --panel: #0a1520;
-    --border: #0d2233;
-    --accent: #00c9ff;
-    --green: #00ff9d;
-    --red: #ff3b5c;
-    --yellow: #ffd700;
-    --text: #c8d8e8;
-    --dim: #4a6070;
+    --bg: #04080d;
+    --panel: #080f18;
+    --panel2: #0b1622;
+    --border: #0e2030;
+    --border2: #142840;
+    --accent: #00b4ff;
+    --accent2: #0080c0;
+    --green: #00e887;
+    --red: #ff2d55;
+    --yellow: #ffcc00;
+    --purple: #a855f7;
+    --text: #b8ccd8;
+    --text2: #7a9bb0;
+    --dim: #3a5060;
+    --white: #e8f4ff;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -24,7 +30,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
+    font-family: 'Barlow Condensed', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
@@ -33,466 +39,461 @@
     content: '';
     position: fixed;
     inset: 0;
-    background: 
-      radial-gradient(ellipse at 20% 20%, rgba(0,201,255,0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(0,255,157,0.03) 0%, transparent 50%);
+    background:
+      radial-gradient(ellipse at 15% 10%, rgba(0,180,255,0.06) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 85%, rgba(0,232,135,0.04) 0%, transparent 45%),
+      radial-gradient(ellipse at 50% 50%, rgba(168,85,247,0.02) 0%, transparent 60%);
     pointer-events: none;
+    z-index: 0;
   }
 
   header {
-    padding: 16px 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(10,21,32,0.9);
-    backdrop-filter: blur(10px);
+    background: rgba(4,8,13,0.95);
+    backdrop-filter: blur(12px);
     position: sticky;
     top: 0;
     z-index: 100;
   }
 
   .logo {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 2px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: 3px;
     text-transform: uppercase;
   }
+  .logo em { color: var(--accent); font-style: normal; }
+  .logo small { font-size: 11px; color: var(--dim); font-family: 'Share Tech Mono', monospace; letter-spacing: 1px; vertical-align: middle; margin-left: 8px; }
 
-  .logo span { color: var(--green); }
+  .hdr-right { display: flex; align-items: center; gap: 12px; }
 
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-    animation: pulse 2s infinite;
-    display: inline-block;
-    margin-right: 8px;
+  .tf-tabs { display: flex; gap: 4px; }
+  .tf-tab {
+    padding: 4px 9px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    color: var(--dim);
+    background: transparent;
+    border: 1px solid var(--border);
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    font-family: 'Share Tech Mono', monospace;
   }
+  .tf-tab.active { background: var(--accent2); color: var(--white); border-color: var(--accent); }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--dim);
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
   }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s infinite; }
+  .dot.warn { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .dot.err { background: var(--red); box-shadow: 0 0 6px var(--red); animation: none; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .status-text { font-size: 13px; color: var(--dim); font-family: 'Share Tech Mono', monospace; }
+  main { padding: 12px; max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
 
-  main { padding: 16px; max-width: 480px; margin: 0 auto; }
-
+  /* === PRICE CARD === */
   .price-card {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 10px;
     position: relative;
     overflow: hidden;
   }
-
-  .price-card::before {
+  .price-card::after {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--accent) 40%, var(--green) 70%, transparent 100%);
+    opacity: 0.6;
   }
 
-  .pair { font-size: 13px; color: var(--dim); letter-spacing: 2px; margin-bottom: 4px; font-family: 'Share Tech Mono', monospace; }
+  .pair-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .pair { font-size: 12px; color: var(--dim); letter-spacing: 2px; font-family: 'Share Tech Mono', monospace; }
+  .timeframe-badge { font-size: 11px; color: var(--accent); font-family: 'Share Tech Mono', monospace; background: rgba(0,180,255,0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(0,180,255,0.2); }
 
-  .price {
-    font-size: 42px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -1px;
-    font-family: 'Share Tech Mono', monospace;
+  .price-row { display: flex; align-items: baseline; gap: 12px; }
+  .price { font-size: 38px; font-weight: 800; color: var(--white); letter-spacing: -1px; font-family: 'Share Tech Mono', monospace; }
+  .price-change { font-size: 15px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
+  .positive { background: rgba(0,232,135,0.12); color: var(--green); }
+  .negative { background: rgba(255,45,85,0.12); color: var(--red); }
+
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 12px; }
+  .stat { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 8px; text-align: center; border: 1px solid var(--border); }
+  .stat-label { font-size: 9px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
+  .stat-value { font-size: 13px; font-weight: 700; color: var(--text); margin-top: 2px; font-family: 'Share Tech Mono', monospace; }
+
+  .timer-bar { height: 2px; background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden; margin-top: 12px; }
+  .timer-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 2px; transition: width 1s linear; }
+  .next-scan { font-size: 11px; color: var(--dim); font-family: 'Share Tech Mono', monospace; margin-top: 4px; text-align: right; }
+
+  /* === MTF PANEL === */
+  .mtf-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
   }
+  .card-title { font-size: 11px; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; font-family: 'Share Tech Mono', monospace; display: flex; align-items: center; gap: 6px; }
+  .card-title::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
 
-  .price-change {
-    font-size: 16px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
-    display: inline-block;
-    margin-top: 6px;
-  }
-
-  .positive { background: rgba(0,255,157,0.15); color: var(--green); }
-  .negative { background: rgba(255,59,92,0.15); color: var(--red); }
-
-  .stats-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-top: 14px;
-  }
-
-  .stat {
-    background: rgba(0,0,0,0.3);
+  .mtf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mtf-cell {
+    background: rgba(0,0,0,0.25);
     border-radius: 8px;
     padding: 10px;
     text-align: center;
+    border: 1px solid var(--border);
+    transition: border-color 0.3s;
   }
+  .mtf-cell.bull { border-color: rgba(0,232,135,0.3); background: rgba(0,232,135,0.04); }
+  .mtf-cell.bear { border-color: rgba(255,45,85,0.3); background: rgba(255,45,85,0.04); }
+  .mtf-cell.neut { border-color: rgba(255,204,0,0.2); background: rgba(255,204,0,0.03); }
+  .mtf-tf { font-size: 10px; color: var(--dim); font-family: 'Share Tech Mono', monospace; }
+  .mtf-sig { font-size: 16px; font-weight: 800; margin-top: 3px; letter-spacing: 1px; }
+  .mtf-sig.bull { color: var(--green); }
+  .mtf-sig.bear { color: var(--red); }
+  .mtf-sig.neut { color: var(--yellow); }
+  .mtf-rsi { font-size: 11px; color: var(--text2); font-family: 'Share Tech Mono', monospace; margin-top: 2px; }
+  .mtf-confirm { font-size: 12px; margin-top: 10px; color: var(--text2); text-align: center; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 6px; }
 
-  .stat-label { font-size: 10px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
-  .stat-value { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 3px; font-family: 'Share Tech Mono', monospace; }
-
+  /* === INDICATORS === */
   .indicators-card {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
   }
 
-  .card-title {
-    font-size: 12px;
-    color: var(--dim);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    font-family: 'Share Tech Mono', monospace;
-  }
-
-  .indicator-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(13,34,51,0.8);
-  }
-
-  .indicator-row:last-child { border-bottom: none; }
-
-  .ind-name { font-size: 14px; font-weight: 600; color: var(--text); }
-  .ind-value { font-size: 14px; font-family: 'Share Tech Mono', monospace; }
-
-  .ind-bar-wrap {
-    flex: 1;
-    height: 4px;
-    background: rgba(0,0,0,0.4);
-    border-radius: 2px;
-    margin: 0 12px;
-    overflow: hidden;
-  }
-
-  .ind-bar { height: 100%; border-radius: 2px; transition: width 1s ease; }
-
-  .signal-card {
-    background: var(--panel);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+  .ind-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ind-box {
+    background: rgba(0,0,0,0.25);
+    border-radius: 8px;
+    padding: 10px 12px;
     border: 1px solid var(--border);
+  }
+  .ind-box-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+  .ind-box-val { font-size: 18px; font-weight: 700; margin-top: 3px; font-family: 'Share Tech Mono', monospace; color: var(--white); }
+  .ind-box-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  .ind-bar-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .ind-bar-bg { flex: 1; height: 4px; background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden; }
+  .ind-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+
+  .div-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-top: 4px; }
+  .div-bull { background: rgba(0,232,135,0.15); color: var(--green); border: 1px solid rgba(0,232,135,0.3); }
+  .div-bear { background: rgba(255,45,85,0.15); color: var(--red); border: 1px solid rgba(255,45,85,0.3); }
+  .div-none { background: rgba(100,100,100,0.1); color: var(--dim); border: 1px solid var(--border); }
+
+  .macd-row { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .macd-cell { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 8px; text-align: center; border: 1px solid var(--border); }
+  .macd-cell-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+  .macd-cell-val { font-size: 14px; font-weight: 700; font-family: 'Share Tech Mono', monospace; margin-top: 2px; }
+
+  .levels-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .lvl-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 8px 12px; border: 1px solid var(--border); }
+  .lvl-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+  .lvl-val { font-size: 15px; font-weight: 700; font-family: 'Share Tech Mono', monospace; margin-top: 2px; }
+
+  /* === SIGNAL === */
+  .signal-card {
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
     position: relative;
     overflow: hidden;
+    transition: border-color 0.4s, background 0.4s;
   }
+  .signal-card.long { border-color: rgba(0,232,135,0.35); }
+  .signal-card.long::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, rgba(0,232,135,0.06) 0%, transparent 55%); pointer-events:none; }
+  .signal-card.short { border-color: rgba(255,45,85,0.35); }
+  .signal-card.short::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,45,85,0.06) 0%, transparent 55%); pointer-events:none; }
+  .signal-card.wait { border-color: rgba(255,204,0,0.15); }
 
-  .signal-card.long { border-color: rgba(0,255,157,0.3); }
-  .signal-card.long::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(0,255,157,0.05) 0%, transparent 60%);
-    pointer-events: none;
-  }
+  .signal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 
-  .signal-card.short { border-color: rgba(255,59,92,0.3); }
-  .signal-card.short::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,59,92,0.05) 0%, transparent 60%);
-    pointer-events: none;
-  }
+  .signal-badge { font-size: 20px; font-weight: 800; letter-spacing: 3px; padding: 6px 14px; border-radius: 8px; text-transform: uppercase; }
+  .badge-long { background: rgba(0,232,135,0.18); color: var(--green); border: 1px solid rgba(0,232,135,0.4); }
+  .badge-short { background: rgba(255,45,85,0.18); color: var(--red); border: 1px solid rgba(255,45,85,0.4); }
+  .badge-wait { background: rgba(255,204,0,0.1); color: var(--yellow); border: 1px solid rgba(255,204,0,0.25); }
 
-  .signal-card.wait { border-color: rgba(255,215,0,0.2); }
+  .sig-meta { text-align: right; }
+  .sig-score { font-size: 13px; color: var(--text2); font-family: 'Share Tech Mono', monospace; }
+  .sig-strength { display: flex; gap: 3px; justify-content: flex-end; margin-top: 4px; }
+  .sig-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--border2); }
+  .sig-dot.active { background: var(--green); box-shadow: 0 0 4px var(--green); }
+  .sig-dot.active.short { background: var(--red); box-shadow: 0 0 4px var(--red); }
+  .sig-dot.active.wait { background: var(--yellow); }
 
-  .signal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
+  .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .entry-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; }
+  .entry-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+  .entry-val { font-size: 18px; font-weight: 700; margin-top: 3px; font-family: 'Share Tech Mono', monospace; }
+  .c-entry { color: var(--accent); }
+  .c-sl { color: var(--red); }
+  .c-tp1 { color: var(--green); }
+  .c-tp2 { color: #5fffa0; }
 
-  .signal-badge {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    padding: 6px 16px;
-    border-radius: 8px;
-    text-transform: uppercase;
-  }
-
-  .badge-long { background: rgba(0,255,157,0.2); color: var(--green); border: 1px solid rgba(0,255,157,0.4); }
-  .badge-short { background: rgba(255,59,92,0.2); color: var(--red); border: 1px solid rgba(255,59,92,0.4); }
-  .badge-wait { background: rgba(255,215,0,0.1); color: var(--yellow); border: 1px solid rgba(255,215,0,0.3); }
-
-  .confidence {
-    font-size: 12px;
-    color: var(--dim);
-    font-family: 'Share Tech Mono', monospace;
-  }
-
-  .levels-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .level-box {
-    background: rgba(0,0,0,0.3);
-    border-radius: 8px;
-    padding: 12px;
-  }
-
-  .level-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
-  .level-value { font-size: 18px; font-weight: 700; margin-top: 4px; font-family: 'Share Tech Mono', monospace; }
-  .entry-val { color: var(--accent); }
-  .sl-val { color: var(--red); }
-  .tp1-val { color: var(--green); }
-  .tp2-val { color: #7fffb2; }
+  .rr-badge { display: inline-block; font-size: 11px; color: var(--purple); background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.25); padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; font-family: 'Share Tech Mono', monospace; }
 
   .reason-box {
-    margin-top: 14px;
     background: rgba(0,0,0,0.2);
     border-radius: 8px;
-    padding: 12px;
-    font-size: 14px;
+    padding: 11px 13px;
+    font-size: 13px;
     color: var(--text);
-    line-height: 1.5;
-    border-left: 3px solid var(--accent);
+    line-height: 1.55;
+    border-left: 2px solid var(--accent);
   }
 
-  .controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
+  .vol-warning { font-size: 12px; color: var(--yellow); background: rgba(255,204,0,0.08); border: 1px solid rgba(255,204,0,0.2); border-radius: 6px; padding: 7px 10px; margin-top: 8px; }
 
-  .btn {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, #0090c0, #00c9ff);
-    color: #000;
-  }
-
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,201,255,0.3); }
+  /* === CONTROLS === */
+  .controls { display: flex; gap: 8px; margin-bottom: 10px; }
+  .btn { flex: 1; padding: 13px; border: none; border-radius: 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+  .btn-primary { background: linear-gradient(135deg, #0070a0, #00b4ff); color: #000; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(0,180,255,0.3); }
   .btn-primary:active { transform: translateY(0); }
+  .btn-secondary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent2); }
 
-  .btn-secondary {
-    background: var(--panel);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
+  /* === TG SETUP === */
   .tg-setup {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 10px;
   }
-
   .tg-setup input {
     width: 100%;
     background: rgba(0,0,0,0.4);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 12px 14px;
+    padding: 11px 13px;
     color: var(--text);
     font-family: 'Share Tech Mono', monospace;
     font-size: 13px;
-    margin: 8px 0;
+    margin: 6px 0;
     outline: none;
+    transition: border-color 0.2s;
   }
-
   .tg-setup input:focus { border-color: var(--accent); }
 
-  .log-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-
-  .log-entry {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: var(--dim);
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(13,34,51,0.5);
-  }
-
+  /* === LOG === */
+  .log-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+  .log-entry { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--dim); padding: 4px 0; border-bottom: 1px solid rgba(14,32,48,0.6); display: flex; gap: 8px; }
   .log-entry:last-child { border-bottom: none; }
-  .log-entry .time { color: var(--accent); margin-right: 8px; }
+  .log-time { color: var(--accent2); min-width: 38px; }
   .log-ok { color: var(--green); }
   .log-warn { color: var(--yellow); }
+  .log-info { color: var(--text2); }
 
-  .timer-bar {
-    height: 3px;
-    background: rgba(0,0,0,0.4);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 12px;
-  }
-
-  .timer-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--green));
-    border-radius: 2px;
-    transition: width 1s linear;
-  }
-
-  .next-scan { font-size: 12px; color: var(--dim); font-family: 'Share Tech Mono', monospace; margin-top: 6px; }
-
-  .hidden { display: none; }
+  .hidden { display: none !important; }
+  .loading-overlay { position: absolute; inset: 0; background: rgba(4,8,13,0.7); display: flex; align-items: center; justify-content: center; border-radius: 14px; z-index: 10; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--accent); letter-spacing: 2px; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">ETH<span>/</span>SIGNAL</div>
-  <div>
-    <span class="status-dot" id="statusDot"></span>
-    <span class="status-text" id="statusText">ЗАГРУЗКА...</span>
+  <div class="logo">ETH<em>/</em>SIG <small>v2.0</small></div>
+  <div class="hdr-right">
+    <div class="tf-tabs">
+      <div class="tf-tab active" onclick="switchTF('15')" id="tf15">15M</div>
+      <div class="tf-tab" onclick="switchTF('60')" id="tf60">1H</div>
+      <div class="tf-tab" onclick="switchTF('240')" id="tf240">4H</div>
+    </div>
+    <div class="status-pill">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">ЗАГРУЗКА</span>
+    </div>
   </div>
 </header>
 
 <main>
 
-  <!-- Настройка Telegram -->
+  <!-- Telegram Setup -->
   <div class="tg-setup" id="tgSetup">
-    <div class="card-title">⚙ Настройка Telegram</div>
+    <div class="card-title">Настройка Telegram</div>
     <input type="text" id="tgToken" placeholder="Токен бота (от BotFather)" />
     <input type="text" id="tgChatId" placeholder="Chat ID" value="1336922235" />
     <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:8px; width:100%">СОХРАНИТЬ И ЗАПУСТИТЬ</button>
   </div>
 
-  <!-- Текущая цена -->
+  <!-- Price -->
   <div class="price-card">
-    <div class="pair">ETH / USDT • BYBIT FUTURES</div>
-    <div class="price" id="currentPrice">--.--</div>
-    <div class="price-change" id="priceChange">--</div>
+    <div class="pair-row">
+      <div class="pair">ETH/USDT · BYBIT</div>
+      <div class="timeframe-badge" id="tfBadge">1H</div>
+    </div>
+    <div class="price-row">
+      <div class="price" id="currentPrice">--.--</div>
+      <div class="price-change" id="priceChange">--</div>
+    </div>
     <div class="stats-row">
-      <div class="stat">
-        <div class="stat-label">MAX 24Ч</div>
-        <div class="stat-value" id="high24">--</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">MIN 24Ч</div>
-        <div class="stat-value" id="low24">--</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">ОБЪЁМ</div>
-        <div class="stat-value" id="volume24">--</div>
-      </div>
+      <div class="stat"><div class="stat-label">MAX 24Ч</div><div class="stat-value" id="high24">--</div></div>
+      <div class="stat"><div class="stat-label">MIN 24Ч</div><div class="stat-value" id="low24">--</div></div>
+      <div class="stat"><div class="stat-label">ОБЪЁМ</div><div class="stat-value" id="volume24">--</div></div>
+      <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPct" title="Объём к среднему 20 свечей">--</div></div>
     </div>
     <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
     <div class="next-scan" id="nextScan">Следующий скан: --</div>
   </div>
 
-  <!-- Индикаторы -->
+  <!-- Multi-Timeframe -->
+  <div class="mtf-card">
+    <div class="card-title">Мульти-таймфрейм</div>
+    <div class="mtf-grid">
+      <div class="mtf-cell" id="mtf15">
+        <div class="mtf-tf">15M</div>
+        <div class="mtf-sig neut" id="mtf15sig">--</div>
+        <div class="mtf-rsi" id="mtf15rsi">RSI --</div>
+      </div>
+      <div class="mtf-cell" id="mtf60">
+        <div class="mtf-tf">1H</div>
+        <div class="mtf-sig neut" id="mtf60sig">--</div>
+        <div class="mtf-rsi" id="mtf60rsi">RSI --</div>
+      </div>
+      <div class="mtf-cell" id="mtf240">
+        <div class="mtf-tf">4H</div>
+        <div class="mtf-sig neut" id="mtf240sig">--</div>
+        <div class="mtf-rsi" id="mtf240rsi">RSI --</div>
+      </div>
+    </div>
+    <div class="mtf-confirm" id="mtfConfirm">Загрузка данных таймфреймов...</div>
+  </div>
+
+  <!-- Indicators -->
   <div class="indicators-card">
-    <div class="card-title">◈ Индикаторы</div>
-    <div class="indicator-row">
-      <div class="ind-name">RSI (14)</div>
-      <div class="ind-bar-wrap"><div class="ind-bar" id="rsiBar" style="width:50%; background: var(--accent)"></div></div>
-      <div class="ind-value" id="rsiVal">--</div>
+    <div class="card-title">Индикаторы</div>
+    <div class="ind-grid">
+
+      <div class="ind-box">
+        <div class="ind-box-label">RSI (14) · Wilder</div>
+        <div class="ind-box-val" id="rsiVal">--</div>
+        <div class="ind-bar-row">
+          <div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBar" style="width:50%"></div></div>
+        </div>
+        <div class="ind-box-sub" id="rsiZone">--</div>
+        <div class="div-badge div-none" id="rsiDiv">Дивергенция: --</div>
+      </div>
+
+      <div class="ind-box">
+        <div class="ind-box-label">MACD</div>
+        <div class="ind-box-val" id="macdVal">--</div>
+        <div class="ind-box-sub" id="macdSub">--</div>
+        <div class="div-badge div-none" id="macdDiv">Пересечение: --</div>
+      </div>
+
+      <div class="ind-box">
+        <div class="ind-box-label">EMA 20 / 50</div>
+        <div class="ind-box-val" id="emaVal">--</div>
+        <div class="ind-box-sub" id="emaSub">--</div>
+        <div class="div-badge div-none" id="emaCross">EMA: --</div>
+      </div>
+
+      <div class="ind-box">
+        <div class="ind-box-label">Объём (vs avg20)</div>
+        <div class="ind-box-val" id="volVal">--</div>
+        <div class="ind-bar-row">
+          <div class="ind-bar-bg"><div class="ind-bar-fill" id="volBar" style="width:50%"></div></div>
+        </div>
+        <div class="ind-box-sub" id="volSub">--</div>
+      </div>
+
     </div>
-    <div class="indicator-row">
-      <div class="ind-name">EMA 20</div>
-      <div class="ind-bar-wrap"><div class="ind-bar" id="emaBar" style="width:50%; background: var(--green)"></div></div>
-      <div class="ind-value" id="emaVal">--</div>
-    </div>
-    <div class="indicator-row">
-      <div class="ind-name">EMA 50</div>
-      <div class="ind-bar-wrap"><div class="ind-bar" id="ema50Bar" style="width:50%; background: var(--yellow)"></div></div>
-      <div class="ind-value" id="ema50Val">--</div>
-    </div>
-    <div class="indicator-row">
-      <div class="ind-name">Поддержка</div>
-      <div class="ind-bar-wrap"><div class="ind-bar" style="width:100%; background: var(--red)"></div></div>
-      <div class="ind-value" id="supportVal">--</div>
-    </div>
-    <div class="indicator-row">
-      <div class="ind-name">Сопротивление</div>
-      <div class="ind-bar-wrap"><div class="ind-bar" style="width:100%; background: var(--green)"></div></div>
-      <div class="ind-value" id="resistVal">--</div>
+
+    <div class="levels-row">
+      <div class="lvl-box">
+        <div class="lvl-label">Поддержка (кластер)</div>
+        <div class="lvl-val" style="color:var(--red)" id="supportVal">--</div>
+      </div>
+      <div class="lvl-box">
+        <div class="lvl-label">Сопротивление (кластер)</div>
+        <div class="lvl-val" style="color:var(--green)" id="resistVal">--</div>
+      </div>
     </div>
   </div>
 
-  <!-- Сигнал -->
+  <!-- Signal -->
   <div class="signal-card wait" id="signalCard">
     <div class="signal-header">
       <div class="signal-badge badge-wait" id="signalBadge">АНАЛИЗ</div>
-      <div class="confidence" id="confidence">--</div>
-    </div>
-    <div class="levels-grid">
-      <div class="level-box">
-        <div class="level-label">Вход</div>
-        <div class="level-value entry-val" id="entryLevel">--</div>
-      </div>
-      <div class="level-box">
-        <div class="level-label">Стоп-лосс</div>
-        <div class="level-value sl-val" id="slLevel">--</div>
-      </div>
-      <div class="level-box">
-        <div class="level-label">Тейк 1</div>
-        <div class="level-value tp1-val" id="tp1Level">--</div>
-      </div>
-      <div class="level-box">
-        <div class="level-label">Тейк 2</div>
-        <div class="level-value tp2-val" id="tp2Level">--</div>
+      <div class="sig-meta">
+        <div class="sig-score" id="sigScore">--</div>
+        <div class="sig-strength" id="sigStrength">
+          <div class="sig-dot"></div><div class="sig-dot"></div><div class="sig-dot"></div>
+          <div class="sig-dot"></div><div class="sig-dot"></div><div class="sig-dot"></div>
+        </div>
       </div>
     </div>
+
+    <div class="entry-grid">
+      <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entryLevel">--</div></div>
+      <div class="entry-box"><div class="entry-label">Стоп-лосс</div><div class="entry-val c-sl" id="slLevel">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1Level">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2Level">--</div></div>
+    </div>
+    <div class="rr-badge" id="rrBadge">R:R --</div>
     <div class="reason-box" id="reasonBox">Ожидание данных...</div>
+    <div class="vol-warning hidden" id="volWarning">⚠ Низкий объём — сигнал менее надёжен</div>
   </div>
 
-  <!-- Кнопки -->
+  <!-- Controls -->
   <div class="controls">
-    <button class="btn btn-primary" onclick="fetchData()">↻ ОБНОВИТЬ</button>
-    <button class="btn btn-secondary" onclick="document.getElementById('tgSetup').classList.toggle('hidden')">⚙ НАСТРОЙКИ</button>
+    <button class="btn btn-primary" onclick="fetchAllData()">↻ ОБНОВИТЬ</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('tgSetup').classList.toggle('hidden')">⚙ TG</button>
   </div>
 
-  <!-- Лог -->
+  <!-- Log -->
   <div class="log-card">
-    <div class="card-title">◈ Лог сигналов</div>
+    <div class="card-title">Лог событий</div>
     <div id="logContainer">
-      <div class="log-entry"><span class="time">--:--</span>Ожидание запуска...</div>
+      <div class="log-entry"><span class="log-time">--:--</span><span class="log-info">Ожидание запуска...</span></div>
     </div>
   </div>
 
 </main>
 
 <script>
+// ===================== STATE =====================
 let tgToken = localStorage.getItem('tgToken') || '';
 let tgChatId = localStorage.getItem('tgChatId') || '1336922235';
-let scanInterval = null;
-let timerInterval = null;
+let currentTF = '60';
+let scanInterval = null, timerInterval = null;
 let secondsLeft = 300;
 let lastSignal = '';
-let prices = [];
+let mtfData = {};
 
 document.getElementById('tgToken').value = tgToken;
 document.getElementById('tgChatId').value = tgChatId;
 
 if (tgToken) {
   document.getElementById('tgSetup').classList.add('hidden');
+  startBot();
+} else {
+  // Auto start without telegram
   startBot();
 }
 
@@ -507,208 +508,470 @@ function saveSettings() {
 }
 
 function startBot() {
-  addLog('Бот запущен', 'ok');
-  document.getElementById('statusText').textContent = 'АКТИВЕН';
-  fetchData();
+  addLog('Бот v2.0 запущен', 'ok');
+  setStatus('АКТИВЕН', 'ok');
+  fetchAllData();
   if (scanInterval) clearInterval(scanInterval);
-  scanInterval = setInterval(fetchData, 300000); // каждые 5 минут
-  startTimer();
+  const interval = getIntervalSeconds(currentTF);
+  scanInterval = setInterval(fetchAllData, interval * 1000);
+  startTimer(interval);
 }
 
-function startTimer() {
-  secondsLeft = 300;
+function getIntervalSeconds(tf) {
+  return tf === '15' ? 180 : tf === '60' ? 300 : 600;
+}
+
+function switchTF(tf) {
+  currentTF = tf;
+  document.querySelectorAll('.tf-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tf' + tf).classList.add('active');
+  document.getElementById('tfBadge').textContent = tf === '15' ? '15M' : tf === '60' ? '1H' : '4H';
+  if (scanInterval) clearInterval(scanInterval);
+  const interval = getIntervalSeconds(tf);
+  scanInterval = setInterval(fetchAllData, interval * 1000);
+  startTimer(interval);
+  fetchAllData();
+}
+
+function startTimer(total = 300) {
+  secondsLeft = total;
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
-    secondsLeft--;
-    const pct = (secondsLeft / 300) * 100;
+    secondsLeft = Math.max(0, secondsLeft - 1);
+    const pct = (secondsLeft / total) * 100;
     document.getElementById('timerFill').style.width = pct + '%';
     const m = Math.floor(secondsLeft / 60);
     const s = secondsLeft % 60;
     document.getElementById('nextScan').textContent = `Следующий скан: ${m}:${s.toString().padStart(2,'0')}`;
-    if (secondsLeft <= 0) secondsLeft = 300;
+    if (secondsLeft <= 0) secondsLeft = total;
   }, 1000);
 }
 
-async function fetchData() {
-  document.getElementById('statusText').textContent = 'СКАНИРУЮ...';
-  startTimer();
+function setStatus(text, type) {
+  document.getElementById('statusText').textContent = text;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'dot' + (type === 'ok' ? '' : type === 'warn' ? ' warn' : ' err');
+}
+
+// ===================== FETCH =====================
+async function fetchAllData() {
+  setStatus('СКАНИРУЮ', 'warn');
+  startTimer(getIntervalSeconds(currentTF));
   try {
-    // Получаем текущую цену
-    const tickerRes = await fetch('https://api.bybit.com/v5/market/tickers?category=linear&symbol=ETHUSDT');
-    const tickerData = await tickerRes.json();
-    const ticker = tickerData.result.list[0];
-    const price = parseFloat(ticker.lastPrice);
-    const change = parseFloat(ticker.price24hPcnt) * 100;
-    const high = parseFloat(ticker.highPrice24h);
-    const low = parseFloat(ticker.lowPrice24h);
-    const vol = parseFloat(ticker.volume24h);
-
-    document.getElementById('currentPrice').textContent = price.toFixed(2);
-    const changeEl = document.getElementById('priceChange');
-    changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-    changeEl.className = 'price-change ' + (change >= 0 ? 'positive' : 'negative');
-    document.getElementById('high24').textContent = high.toFixed(0);
-    document.getElementById('low24').textContent = low.toFixed(0);
-    document.getElementById('volume24').textContent = (vol / 1000000).toFixed(1) + 'M';
-
-    // Получаем свечи для индикаторов
-    const klinesRes = await fetch('https://api.bybit.com/v5/market/kline?category=linear&symbol=ETHUSDT&interval=60&limit=100');
-    const klinesData = await klinesRes.json();
-    const klines = klinesData.result.list.reverse();
-    const closes = klines.map(k => parseFloat(k[4]));
-
-    prices = closes;
-
-    // Считаем индикаторы
-    const rsi = calcRSI(closes, 14);
-    const ema20 = calcEMA(closes, 20);
-    const ema50 = calcEMA(closes, 50);
-    const support = Math.min(...closes.slice(-20)) * 0.999;
-    const resist = Math.max(...closes.slice(-20)) * 1.001;
-
-    // Обновляем UI
-    document.getElementById('rsiVal').textContent = rsi.toFixed(1);
-    document.getElementById('rsiBar').style.width = rsi + '%';
-    document.getElementById('rsiBar').style.background = rsi < 35 ? 'var(--green)' : rsi > 65 ? 'var(--red)' : 'var(--accent)';
-    document.getElementById('emaVal').textContent = ema20.toFixed(0);
-    document.getElementById('ema50Val').textContent = ema50.toFixed(0);
-    document.getElementById('supportVal').textContent = support.toFixed(0);
-    document.getElementById('resistVal').textContent = resist.toFixed(0);
-
-    // Генерируем сигнал
-    generateSignal(price, rsi, ema20, ema50, support, resist, high, low);
-
-    document.getElementById('statusText').textContent = 'АКТИВЕН';
-    addLog(`Скан: ETH $${price.toFixed(2)} | RSI ${rsi.toFixed(1)}`, 'ok');
-
-  } catch (e) {
-    document.getElementById('statusText').textContent = 'ОШИБКА';
-    addLog('Ошибка получения данных: ' + e.message, 'warn');
+    await Promise.all([
+      fetchTicker(),
+      fetchMTF()
+    ]);
+    setStatus('АКТИВЕН', 'ok');
+  } catch(e) {
+    setStatus('ОШИБКА', 'err');
+    addLog('Ошибка: ' + e.message, 'warn');
   }
 }
 
-function calcRSI(closes, period) {
+async function fetchTicker() {
+  const res = await fetch('https://api.bybit.com/v5/market/tickers?category=linear&symbol=ETHUSDT');
+  const data = await res.json();
+  const t = data.result.list[0];
+  const price = parseFloat(t.lastPrice);
+  const change = parseFloat(t.price24hPcnt) * 100;
+
+  document.getElementById('currentPrice').textContent = price.toFixed(2);
+  const cel = document.getElementById('priceChange');
+  cel.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+  cel.className = 'price-change ' + (change >= 0 ? 'positive' : 'negative');
+  document.getElementById('high24').textContent = parseFloat(t.highPrice24h).toFixed(0);
+  document.getElementById('low24').textContent = parseFloat(t.lowPrice24h).toFixed(0);
+  document.getElementById('volume24').textContent = (parseFloat(t.volume24h) / 1e6).toFixed(1) + 'M';
+}
+
+async function fetchKlines(interval, limit = 120) {
+  const res = await fetch(`https://api.bybit.com/v5/market/kline?category=linear&symbol=ETHUSDT&interval=${interval}&limit=${limit}`);
+  const data = await res.json();
+  return data.result.list.reverse(); // oldest first
+}
+
+async function fetchMTF() {
+  const tfs = ['15', '60', '240'];
+  const results = await Promise.all(tfs.map(tf => fetchKlines(tf)));
+
+  tfs.forEach((tf, i) => {
+    const klines = results[i];
+    const closes = klines.map(k => parseFloat(k[4]));
+    const volumes = klines.map(k => parseFloat(k[5]));
+    const highs   = klines.map(k => parseFloat(k[2]));
+    const lows    = klines.map(k => parseFloat(k[3]));
+
+    const rsi   = calcRSIWilder(closes, 14);
+    const ema20 = calcEMA(closes, 20);
+    const ema50 = calcEMA(closes, 50);
+    const macd  = calcMACD(closes);
+    const price = closes[closes.length - 1];
+    const volRatio = calcVolRatio(volumes);
+    const support  = calcSupportCluster(lows);
+    const resist   = calcResistCluster(highs);
+    const div      = detectRSIDivergence(closes, rsi, 14);
+
+    mtfData[tf] = { rsi, ema20, ema50, macd, price, closes, volumes, volRatio, support, resist, div, highs, lows };
+
+    // Update MTF UI
+    const trend = getTrend(price, ema20, ema50, rsi, macd);
+    const cell = document.getElementById('mtf' + tf);
+    const sigEl = document.getElementById('mtf' + tf + 'sig');
+    const rsiEl = document.getElementById('mtf' + tf + 'rsi');
+    cell.className = 'mtf-cell ' + trend.cls;
+    sigEl.className = 'mtf-sig ' + trend.cls;
+    sigEl.textContent = trend.label;
+    rsiEl.textContent = 'RSI ' + rsi.toFixed(1);
+  });
+
+  // MTF confirmation
+  const sigs = tfs.map(tf => getTrend(mtfData[tf].price, mtfData[tf].ema20, mtfData[tf].ema50, mtfData[tf].rsi, mtfData[tf].macd).raw);
+  const bulls = sigs.filter(s => s === 'bull').length;
+  const bears = sigs.filter(s => s === 'bear').length;
+  let confirm = '';
+  if (bulls === 3) confirm = '✅ Все 3 таймфрейма бычьи — сильный ЛОНГ';
+  else if (bears === 3) confirm = '✅ Все 3 таймфрейма медвежьи — сильный ШОРТ';
+  else if (bulls === 2) confirm = '⚡ 2/3 таймфреймов бычьих — умеренный ЛОНГ';
+  else if (bears === 2) confirm = '⚡ 2/3 таймфреймов медвежьих — умеренный ШОРТ';
+  else confirm = '◈ Таймфреймы в разнобой — ждём подтверждения';
+  document.getElementById('mtfConfirm').textContent = confirm;
+
+  // Update main indicators from active TF
+  const d = mtfData[currentTF];
+  if (!d) return;
+
+  updateIndicatorsUI(d);
+  generateSignal(d, bulls, bears);
+
+  addLog(`ETH $${d.price.toFixed(2)} | RSI ${d.rsi.toFixed(1)} | Vol ${(d.volRatio * 100).toFixed(0)}%`, 'ok');
+}
+
+// ===================== INDICATORS =====================
+
+// RSI с методом сглаживания Wilder (как на TradingView)
+function calcRSIWilder(closes, period) {
+  if (closes.length < period + 1) return 50;
   let gains = 0, losses = 0;
-  for (let i = closes.length - period; i < closes.length; i++) {
-    const diff = closes[i] - closes[i-1];
-    if (diff > 0) gains += diff;
-    else losses += Math.abs(diff);
+  for (let i = 1; i <= period; i++) {
+    const d = closes[i] - closes[i - 1];
+    if (d > 0) gains += d; else losses -= d;
   }
-  const rs = gains / (losses || 1);
-  return 100 - (100 / (1 + rs));
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  for (let i = period + 1; i < closes.length; i++) {
+    const d = closes[i] - closes[i - 1];
+    const g = d > 0 ? d : 0;
+    const l = d < 0 ? -d : 0;
+    avgGain = (avgGain * (period - 1) + g) / period;
+    avgLoss = (avgLoss * (period - 1) + l) / period;
+  }
+  if (avgLoss === 0) return 100;
+  return 100 - 100 / (1 + avgGain / avgLoss);
 }
 
 function calcEMA(closes, period) {
   const k = 2 / (period + 1);
-  let ema = closes[0];
-  for (let i = 1; i < closes.length; i++) {
+  let ema = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  for (let i = period; i < closes.length; i++) {
     ema = closes[i] * k + ema * (1 - k);
   }
   return ema;
 }
 
-function generateSignal(price, rsi, ema20, ema50, support, resist, high, low) {
-  let signal = 'WAIT';
-  let reasons = [];
+function calcEMAArr(closes, period) {
+  const k = 2 / (period + 1);
+  const result = [];
+  let ema = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  result.push(ema);
+  for (let i = period; i < closes.length; i++) {
+    ema = closes[i] * k + ema * (1 - k);
+    result.push(ema);
+  }
+  return result;
+}
+
+function calcMACD(closes) {
+  if (closes.length < 35) return { macd: 0, signal: 0, hist: 0, cross: 'none' };
+  const ema12arr = calcEMAArr(closes, 12);
+  const ema26arr = calcEMAArr(closes, 26);
+  const minLen = Math.min(ema12arr.length, ema26arr.length);
+  const macdLine = [];
+  for (let i = 0; i < minLen; i++) {
+    macdLine.push(ema12arr[ema12arr.length - minLen + i] - ema26arr[ema26arr.length - minLen + i]);
+  }
+  const signalArr = calcEMAArr(macdLine, 9);
+  const macdVal = macdLine[macdLine.length - 1];
+  const sigVal  = signalArr[signalArr.length - 1];
+  const prevMacd = macdLine[macdLine.length - 2];
+  const prevSig  = signalArr[signalArr.length - 2];
+  const hist = macdVal - sigVal;
+  let cross = 'none';
+  if (prevMacd < prevSig && macdVal > sigVal) cross = 'bull';
+  if (prevMacd > prevSig && macdVal < sigVal) cross = 'bear';
+  return { macd: macdVal, signal: sigVal, hist, cross };
+}
+
+function calcVolRatio(volumes) {
+  if (volumes.length < 21) return 1;
+  const avg = volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20;
+  return avg > 0 ? volumes[volumes.length - 1] / avg : 1;
+}
+
+// Поддержка/сопротивление через кластеры (зоны отбитий)
+function calcSupportCluster(lows) {
+  const sorted = [...lows].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length * 0.1)];
+}
+function calcResistCluster(highs) {
+  const sorted = [...highs].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length * 0.9)];
+}
+
+// Дивергенция RSI (упрощённая — последние 20 свечей)
+function detectRSIDivergence(closes, currentRSI, period) {
+  if (closes.length < 30) return 'none';
+  const window = closes.slice(-20);
+  const minPrice = Math.min(...window);
+  const maxPrice = Math.max(...window);
+  const prevRSI = calcRSIWilder(closes.slice(0, -5), period);
+
+  // Бычья дивергенция: цена делает новый минимум, RSI выше предыдущего
+  if (closes[closes.length - 1] <= minPrice * 1.002 && currentRSI > prevRSI + 3) return 'bull';
+  // Медвежья дивергенция: цена делает новый максимум, RSI ниже предыдущего
+  if (closes[closes.length - 1] >= maxPrice * 0.998 && currentRSI < prevRSI - 3) return 'bear';
+  return 'none';
+}
+
+function getTrend(price, ema20, ema50, rsi, macd) {
   let score = 0;
+  if (price > ema20) score++;
+  if (ema20 > ema50) score++;
+  if (rsi < 55 && rsi > 45) score = score; // neutral zone
+  if (rsi > 55) score++;
+  if (rsi < 45) score--;
+  if (macd.hist > 0) score++;
+  if (macd.hist < 0) score--;
 
-  // Лонг условия
-  if (rsi < 40) { score += 2; reasons.push('RSI перепродан (' + rsi.toFixed(1) + ')'); }
-  if (price > ema20 && ema20 > ema50) { score += 2; reasons.push('Цена выше EMA20 > EMA50'); }
-  if (price < support * 1.015) { score += 1; reasons.push('Цена у поддержки'); }
-  if (rsi > 30 && rsi < 50 && price > ema50) { score += 1; reasons.push('RSI восстанавливается'); }
+  if (score >= 2) return { raw: 'bull', cls: 'bull', label: '▲ БЫЧИЙ' };
+  if (score <= -1) return { raw: 'bear', cls: 'bear', label: '▼ МЕДВЕЖИЙ' };
+  return { raw: 'neut', cls: 'neut', label: '◈ НЕЙТРАЛ' };
+}
 
-  // Шорт условия
-  let shortScore = 0;
-  if (rsi > 65) { shortScore += 2; reasons.push('RSI перекуплен (' + rsi.toFixed(1) + ')'); }
-  if (price < ema20 && ema20 < ema50) { shortScore += 2; reasons.push('Цена ниже EMA20 < EMA50'); }
-  if (price > resist * 0.985) { shortScore += 1; reasons.push('Цена у сопротивления'); }
+// ===================== UI UPDATE =====================
+function updateIndicatorsUI(d) {
+  const { rsi, ema20, ema50, macd, price, volRatio, support, resist, div } = d;
 
-  const card = document.getElementById('signalCard');
+  // RSI
+  document.getElementById('rsiVal').textContent = rsi.toFixed(1);
+  document.getElementById('rsiVal').style.color = rsi < 35 ? 'var(--green)' : rsi > 65 ? 'var(--red)' : 'var(--white)';
+  const rsiBar = document.getElementById('rsiBar');
+  rsiBar.style.width = rsi + '%';
+  rsiBar.style.background = rsi < 35 ? 'var(--green)' : rsi > 65 ? 'var(--red)' : 'var(--accent)';
+  document.getElementById('rsiZone').textContent = rsi < 30 ? 'Сильно перепродан' : rsi < 40 ? 'Перепродан' : rsi > 70 ? 'Сильно перекуплен' : rsi > 60 ? 'Перекуплен' : 'Нейтральная зона';
+
+  // RSI Divergence
+  const divEl = document.getElementById('rsiDiv');
+  if (div === 'bull') { divEl.className = 'div-badge div-bull'; divEl.textContent = '▲ Бычья дивергенция'; }
+  else if (div === 'bear') { divEl.className = 'div-badge div-bear'; divEl.textContent = '▼ Медвежья дивергенция'; }
+  else { divEl.className = 'div-badge div-none'; divEl.textContent = 'Дивергенция: нет'; }
+
+  // MACD
+  document.getElementById('macdVal').textContent = macd.macd.toFixed(1);
+  document.getElementById('macdVal').style.color = macd.hist > 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('macdSub').textContent = `Hist: ${macd.hist > 0 ? '+' : ''}${macd.hist.toFixed(2)} | Sig: ${macd.signal.toFixed(1)}`;
+  const macdDivEl = document.getElementById('macdDiv');
+  if (macd.cross === 'bull') { macdDivEl.className = 'div-badge div-bull'; macdDivEl.textContent = '▲ Пересечение вверх'; }
+  else if (macd.cross === 'bear') { macdDivEl.className = 'div-badge div-bear'; macdDivEl.textContent = '▼ Пересечение вниз'; }
+  else { macdDivEl.className = 'div-badge div-none'; macdDivEl.textContent = `Гистограмма: ${macd.hist > 0 ? 'растёт' : 'падает'}`; }
+
+  // EMA
+  document.getElementById('emaVal').textContent = ema20.toFixed(0);
+  document.getElementById('emaSub').textContent = `EMA20: ${ema20.toFixed(0)} / EMA50: ${ema50.toFixed(0)}`;
+  const emaCrossEl = document.getElementById('emaCross');
+  if (price > ema20 && ema20 > ema50) { emaCrossEl.className = 'div-badge div-bull'; emaCrossEl.textContent = '▲ Цена > EMA20 > EMA50'; }
+  else if (price < ema20 && ema20 < ema50) { emaCrossEl.className = 'div-badge div-bear'; emaCrossEl.textContent = '▼ Цена < EMA20 < EMA50'; }
+  else { emaCrossEl.className = 'div-badge div-none'; emaCrossEl.textContent = `EMA: смешанный сигнал`; }
+
+  // Volume
+  const volPct = (volRatio * 100).toFixed(0);
+  document.getElementById('volVal').textContent = volPct + '%';
+  document.getElementById('volVal').style.color = volRatio > 1.5 ? 'var(--green)' : volRatio < 0.7 ? 'var(--red)' : 'var(--white)';
+  const volBar = document.getElementById('volBar');
+  volBar.style.width = Math.min(volRatio * 50, 100) + '%';
+  volBar.style.background = volRatio > 1.5 ? 'var(--green)' : volRatio < 0.7 ? 'var(--red)' : 'var(--accent)';
+  document.getElementById('volSub').textContent = volRatio > 1.5 ? 'Объём выше среднего ✓' : volRatio < 0.7 ? 'Объём ниже нормы ⚠' : 'Объём в норме';
+  document.getElementById('volPct').textContent = volPct + '%';
+  document.getElementById('volPct').style.color = volRatio > 1.5 ? 'var(--green)' : volRatio < 0.7 ? 'var(--red)' : 'var(--text)';
+
+  // Levels
+  document.getElementById('supportVal').textContent = '$' + support.toFixed(0);
+  document.getElementById('resistVal').textContent  = '$' + resist.toFixed(0);
+}
+
+// ===================== SIGNAL GENERATION =====================
+function generateSignal(d, bulls, bears) {
+  const { rsi, ema20, ema50, macd, price, volRatio, support, resist, div } = d;
+
+  let longScore = 0, shortScore = 0;
+  const longReasons = [], shortReasons = [];
+  const MAX = 8;
+
+  // --- ЛОНГ условия ---
+  // 1. RSI перепродан
+  if (rsi < 30) { longScore += 3; longReasons.push('RSI сильно перепродан (' + rsi.toFixed(1) + ')'); }
+  else if (rsi < 40) { longScore += 2; longReasons.push('RSI перепродан (' + rsi.toFixed(1) + ')'); }
+
+  // 2. EMA тренд
+  if (price > ema20 && ema20 > ema50) { longScore += 2; longReasons.push('Цена выше EMA20 > EMA50 — восходящий тренд'); }
+  else if (price > ema50) { longScore += 1; longReasons.push('Цена выше EMA50'); }
+
+  // 3. MACD
+  if (macd.cross === 'bull') { longScore += 2; longReasons.push('MACD бычье пересечение'); }
+  else if (macd.hist > 0) { longScore += 1; longReasons.push('MACD гистограмма положительная'); }
+
+  // 4. RSI дивергенция
+  if (div === 'bull') { longScore += 2; longReasons.push('Бычья дивергенция RSI'); }
+
+  // 5. Цена у поддержки
+  if (price < support * 1.012) { longScore += 1; longReasons.push('Цена у уровня поддержки'); }
+
+  // 6. Мульти-таймфрейм подтверждение
+  if (bulls >= 2) { longScore += 1; longReasons.push(`MTF: ${bulls}/3 таймфреймов бычьих`); }
+
+  // --- ШОРТ условия ---
+  if (rsi > 70) { shortScore += 3; shortReasons.push('RSI сильно перекуплен (' + rsi.toFixed(1) + ')'); }
+  else if (rsi > 60) { shortScore += 2; shortReasons.push('RSI перекуплен (' + rsi.toFixed(1) + ')'); }
+
+  if (price < ema20 && ema20 < ema50) { shortScore += 2; shortReasons.push('Цена ниже EMA20 < EMA50 — нисходящий тренд'); }
+  else if (price < ema50) { shortScore += 1; shortReasons.push('Цена ниже EMA50'); }
+
+  if (macd.cross === 'bear') { shortScore += 2; shortReasons.push('MACD медвежье пересечение'); }
+  else if (macd.hist < 0) { shortScore += 1; shortReasons.push('MACD гистограмма отрицательная'); }
+
+  if (div === 'bear') { shortScore += 2; shortReasons.push('Медвежья дивергенция RSI'); }
+
+  if (price > resist * 0.988) { shortScore += 1; shortReasons.push('Цена у уровня сопротивления'); }
+
+  if (bears >= 2) { shortScore += 1; shortReasons.push(`MTF: ${bears}/3 таймфреймов медвежьих`); }
+
+  // --- Фильтр объёма ---
+  const volOk = volRatio >= 0.8;
+  const showVolWarn = !volOk;
+
+  // --- Принятие решения ---
+  const card  = document.getElementById('signalCard');
   const badge = document.getElementById('signalBadge');
+  const MIN_SCORE = 4;
 
-  if (score >= 3 && score > shortScore) {
-    signal = 'LONG';
+  document.getElementById('volWarning').classList.toggle('hidden', !showVolWarn);
+
+  // Если объём слишком низкий — снижаем оценку
+  const effectiveLong  = volOk ? longScore  : Math.floor(longScore  * 0.7);
+  const effectiveShort = volOk ? shortScore : Math.floor(shortScore * 0.7);
+
+  if (effectiveLong >= MIN_SCORE && effectiveLong > effectiveShort) {
     const entry = price;
-    const sl = support * 0.995;
-    const tp1 = price + (price - sl) * 1.5;
-    const tp2 = price + (price - sl) * 2.5;
+    const sl    = Math.min(support * 0.994, price * 0.985);
+    const risk  = entry - sl;
+    const tp1   = entry + risk * 1.5;
+    const tp2   = entry + risk * 2.5;
+    const rr    = (risk > 0 ? ((tp1 - entry) / risk).toFixed(1) : '--');
 
     card.className = 'signal-card long';
     badge.className = 'signal-badge badge-long';
     badge.textContent = '▲ ЛОНГ';
-    document.getElementById('confidence').textContent = `Сила: ${score}/6`;
+    setStrengthDots(longScore, MAX, 'long');
+    document.getElementById('sigScore').textContent = `Сила: ${longScore}/${MAX}`;
     document.getElementById('entryLevel').textContent = '$' + entry.toFixed(0);
-    document.getElementById('slLevel').textContent = '$' + sl.toFixed(0);
-    document.getElementById('tp1Level').textContent = '$' + tp1.toFixed(0);
-    document.getElementById('tp2Level').textContent = '$' + tp2.toFixed(0);
-    document.getElementById('reasonBox').textContent = reasons.join(' • ');
+    document.getElementById('slLevel').textContent    = '$' + sl.toFixed(0);
+    document.getElementById('tp1Level').textContent   = '$' + tp1.toFixed(0);
+    document.getElementById('tp2Level').textContent   = '$' + tp2.toFixed(0);
+    document.getElementById('rrBadge').textContent    = `R:R 1:${rr}`;
+    document.getElementById('reasonBox').textContent  = longReasons.join(' • ');
 
     if (lastSignal !== 'LONG') {
-      sendTelegram(`🟢 СИГНАЛ ЛОНГ ETH\n\nЦена входа: $${entry.toFixed(0)}\nСтоп-лосс: $${sl.toFixed(0)}\nТейк 1: $${tp1.toFixed(0)}\nТейк 2: $${tp2.toFixed(0)}\n\n📊 RSI: ${rsi.toFixed(1)}\n📈 EMA20: ${ema20.toFixed(0)} | EMA50: ${ema50.toFixed(0)}\n\n⚡️ ${reasons.join('\n• ')}`);
+      sendTG(`🟢 СИГНАЛ ЛОНГ ETH\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп: $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n\n📊 RSI: ${rsi.toFixed(1)}\n📈 EMA20/50: ${ema20.toFixed(0)} / ${ema50.toFixed(0)}\n🔹 MACD: ${macd.cross === 'bull' ? 'бычье пересечение' : macd.hist.toFixed(2)}\n${div === 'bull' ? '🔁 Бычья дивергенция\n' : ''}${!volOk ? '⚠️ Объём низкий\n' : ''}${bulls >= 2 ? `\n✅ MTF: ${bulls}/3 таймфрейма бычьих` : ''}\n\n⚡️ ${longReasons.join('\n• ')}`);
       lastSignal = 'LONG';
+      addLog('СИГНАЛ ЛОНГ отправлен', 'ok');
     }
 
-  } else if (shortScore >= 3 && shortScore > score) {
-    signal = 'SHORT';
+  } else if (effectiveShort >= MIN_SCORE && effectiveShort > effectiveLong) {
     const entry = price;
-    const sl = resist * 1.005;
-    const tp1 = price - (sl - price) * 1.5;
-    const tp2 = price - (sl - price) * 2.5;
+    const sl    = Math.max(resist * 1.006, price * 1.015);
+    const risk  = sl - entry;
+    const tp1   = entry - risk * 1.5;
+    const tp2   = entry - risk * 2.5;
+    const rr    = (risk > 0 ? ((entry - tp1) / risk).toFixed(1) : '--');
 
     card.className = 'signal-card short';
     badge.className = 'signal-badge badge-short';
     badge.textContent = '▼ ШОРТ';
-    document.getElementById('confidence').textContent = `Сила: ${shortScore}/6`;
+    setStrengthDots(shortScore, MAX, 'short');
+    document.getElementById('sigScore').textContent = `Сила: ${shortScore}/${MAX}`;
     document.getElementById('entryLevel').textContent = '$' + entry.toFixed(0);
-    document.getElementById('slLevel').textContent = '$' + sl.toFixed(0);
-    document.getElementById('tp1Level').textContent = '$' + tp1.toFixed(0);
-    document.getElementById('tp2Level').textContent = '$' + tp2.toFixed(0);
-    document.getElementById('reasonBox').textContent = reasons.join(' • ');
+    document.getElementById('slLevel').textContent    = '$' + sl.toFixed(0);
+    document.getElementById('tp1Level').textContent   = '$' + tp1.toFixed(0);
+    document.getElementById('tp2Level').textContent   = '$' + tp2.toFixed(0);
+    document.getElementById('rrBadge').textContent    = `R:R 1:${rr}`;
+    document.getElementById('reasonBox').textContent  = shortReasons.join(' • ');
 
     if (lastSignal !== 'SHORT') {
-      sendTelegram(`🔴 СИГНАЛ ШОРТ ETH\n\nЦена входа: $${entry.toFixed(0)}\nСтоп-лосс: $${sl.toFixed(0)}\nТейк 1: $${tp1.toFixed(0)}\nТейк 2: $${tp2.toFixed(0)}\n\n📊 RSI: ${rsi.toFixed(1)}\n📉 EMA20: ${ema20.toFixed(0)} | EMA50: ${ema50.toFixed(0)}\n\n⚡️ ${reasons.join('\n• ')}`);
+      sendTG(`🔴 СИГНАЛ ШОРТ ETH\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп: $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n\n📊 RSI: ${rsi.toFixed(1)}\n📉 EMA20/50: ${ema20.toFixed(0)} / ${ema50.toFixed(0)}\n🔸 MACD: ${macd.cross === 'bear' ? 'медвежье пересечение' : macd.hist.toFixed(2)}\n${div === 'bear' ? '🔁 Медвежья дивергенция\n' : ''}${!volOk ? '⚠️ Объём низкий\n' : ''}${bears >= 2 ? `\n✅ MTF: ${bears}/3 таймфрейма медвежьих` : ''}\n\n⚡️ ${shortReasons.join('\n• ')}`);
       lastSignal = 'SHORT';
+      addLog('СИГНАЛ ШОРТ отправлен', 'ok');
     }
 
   } else {
     card.className = 'signal-card wait';
     badge.className = 'signal-badge badge-wait';
     badge.textContent = '◈ ОЖИДАНИЕ';
-    document.getElementById('confidence').textContent = `Сигналов нет`;
+    setStrengthDots(Math.max(longScore, shortScore), MAX, 'wait');
+    document.getElementById('sigScore').textContent = `L:${longScore} / S:${shortScore}`;
     document.getElementById('entryLevel').textContent = '$' + price.toFixed(0);
-    document.getElementById('slLevel').textContent = '--';
-    document.getElementById('tp1Level').textContent = '--';
-    document.getElementById('tp2Level').textContent = '--';
-    document.getElementById('reasonBox').textContent = `RSI ${rsi.toFixed(1)} — нет чёткого сигнала. Ждём лучшего момента.`;
+    document.getElementById('slLevel').textContent    = '--';
+    document.getElementById('tp1Level').textContent   = '--';
+    document.getElementById('tp2Level').textContent   = '--';
+    document.getElementById('rrBadge').textContent    = 'R:R --';
+    document.getElementById('reasonBox').textContent  = `RSI ${rsi.toFixed(1)} — нет чёткого сигнала. Лонг: ${longScore}/${MAX}, Шорт: ${shortScore}/${MAX}. Ждём подтверждения.`;
     lastSignal = '';
   }
 }
 
-async function sendTelegram(text) {
-  if (!tgToken || !tgChatId) return;
-  try {
-    const url = `https://api.telegram.org/bot${tgToken}/sendMessage`;
-    await fetch(url, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({chat_id: tgChatId, text: text})
-    });
-    addLog('Сигнал отправлен в Telegram', 'ok');
-  } catch(e) {
-    addLog('Ошибка отправки в Telegram', 'warn');
+function setStrengthDots(score, max, type) {
+  const wrap = document.getElementById('sigStrength');
+  wrap.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'sig-dot' + (i < score ? (' active ' + type) : '');
+    wrap.appendChild(dot);
   }
 }
 
+// ===================== TELEGRAM =====================
+async function sendTG(text) {
+  if (!tgToken || !tgChatId) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: 'HTML' })
+    });
+  } catch(e) {
+    addLog('Ошибка TG: ' + e.message, 'warn');
+  }
+}
+
+// ===================== LOG =====================
 function addLog(msg, type) {
   const now = new Date();
   const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  const log = document.getElementById('logContainer');
+  const container = document.getElementById('logContainer');
   const entry = document.createElement('div');
   entry.className = 'log-entry';
-  entry.innerHTML = `<span class="time">${time}</span><span class="${type === 'ok' ? 'log-ok' : 'log-warn'}">${msg}</span>`;
-  log.insertBefore(entry, log.firstChild);
-  if (log.children.length > 10) log.removeChild(log.lastChild);
+  entry.innerHTML = `<span class="log-time">${time}</span><span class="log-${type || 'info'}">${msg}</span>`;
+  container.insertBefore(entry, container.firstChild);
+  while (container.children.length > 12) container.removeChild(container.lastChild);
 }
 </script>
 </body>
