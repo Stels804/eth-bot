@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crypto Signal Bot v3</title>
+<title>Crypto Signal Bot v3.1</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&display=swap');
 
@@ -398,7 +398,7 @@
 <body>
 
 <header>
-  <div class="logo">CRYPTO<em>/</em>SIG <small>v3.0</small></div>
+  <div class="logo">CRYPTO<em>/</em>SIG <small>v3.1</small></div>
   <div class="hdr-right">
     <div class="tf-tabs">
       <div class="tf-tab active" onclick="switchTF('15')" id="tf15">15M</div>
@@ -820,7 +820,7 @@ function saveSettings() {
 }
 
 function startBot() {
-  addLog('Бот v3.0 запущен (ETH+BTC+SOL + фильтр тренда)', 'ok');
+  addLog('Бот v3.1 запущен (RSI-фильтр + стоп макс 2%)', 'ok');
   setStatus('АКТИВЕН', 'ok');
   fetchAllData();
   if (scanInterval) clearInterval(scanInterval);
@@ -1276,6 +1276,12 @@ function generateSignal(key, d, bulls, bears) {
   const longReasons = [], shortReasons = [];
   const MAX = 9; // +1 for trend filter bonus
 
+  // === RSI EXTREME FILTER ===
+  // Не шортим при RSI < 35 — рынок перепродан, высок риск отскока
+  const rsiBlocksShort = rsi < 35;
+  // Не лонгуем при RSI > 65 — рынок перекуплен, высок риск разворота вниз
+  const rsiBlocksLong  = rsi > 65;
+
   // === ЛОНГ ===
   if (rsi < 30) { longScore += 3; longReasons.push('RSI сильно перепродан (' + rsi.toFixed(1) + ')'); }
   else if (rsi < 40) { longScore += 2; longReasons.push('RSI перепродан (' + rsi.toFixed(1) + ')'); }
@@ -1314,6 +1320,47 @@ function generateSignal(key, d, bulls, bears) {
   volWarn.classList.toggle('hidden', volOk);
 
   const MIN_SCORE = 4;
+
+  // === RSI EXTREME BLOCKS — проверяем ДО тренд-фильтра ===
+  if (rsiBlocksShort && effectiveShort >= MIN_SCORE && effectiveShort > effectiveLong) {
+    card.className  = 'signal-card blocked';
+    badge.className = 'signal-badge badge-blocked';
+    badge.textContent = '⛔ ШОРТ ЗАБЛОКИРОВАН';
+    setStrengthDots(key, shortScore, MAX, 'wait');
+    document.getElementById('sigScore' + key).textContent = `Сила: ${shortScore}/${MAX}`;
+    document.getElementById('entry'    + key).textContent = '$' + price.toFixed(0);
+    document.getElementById('sl'       + key).textContent = '—';
+    document.getElementById('tp1'      + key).textContent = '—';
+    document.getElementById('tp2'      + key).textContent = '—';
+    document.getElementById('rr'       + key).textContent = 'R:R --';
+    const rEl = document.getElementById('reason' + key);
+    rEl.className = 'reason-box blocked-box';
+    rEl.textContent = `RSI ${rsi.toFixed(1)} — рынок перепродан, шорт опасен (риск отскока). ${shortReasons.join(' • ')}`;
+    trendWarn.textContent = `⚠ RSI ${rsi.toFixed(1)} < 35 — шорт заблокирован`;
+    trendWarn.classList.remove('hidden');
+    updateTabSig(key, 'blocked');
+    return;
+  }
+
+  if (rsiBlocksLong && effectiveLong >= MIN_SCORE && effectiveLong > effectiveShort) {
+    card.className  = 'signal-card blocked';
+    badge.className = 'signal-badge badge-blocked';
+    badge.textContent = '⛔ ЛОНГ ЗАБЛОКИРОВАН';
+    setStrengthDots(key, longScore, MAX, 'wait');
+    document.getElementById('sigScore' + key).textContent = `Сила: ${longScore}/${MAX}`;
+    document.getElementById('entry'    + key).textContent = '$' + price.toFixed(0);
+    document.getElementById('sl'       + key).textContent = '—';
+    document.getElementById('tp1'      + key).textContent = '—';
+    document.getElementById('tp2'      + key).textContent = '—';
+    document.getElementById('rr'       + key).textContent = 'R:R --';
+    const rEl = document.getElementById('reason' + key);
+    rEl.className = 'reason-box blocked-box';
+    rEl.textContent = `RSI ${rsi.toFixed(1)} — рынок перекуплен, лонг опасен (риск разворота). ${longReasons.join(' • ')}`;
+    trendWarn.textContent = `⚠ RSI ${rsi.toFixed(1)} > 65 — лонг заблокирован`;
+    trendWarn.classList.remove('hidden');
+    updateTabSig(key, 'blocked');
+    return;
+  }
 
   // === CHECK TREND FILTER BLOCKS ===
   const longBlocked  = !filter.longOk  && effectiveLong  >= MIN_SCORE;
@@ -1366,7 +1413,8 @@ function generateSignal(key, d, bulls, bears) {
 
   if (effectiveLong >= MIN_SCORE && effectiveLong > effectiveShort && filter.longOk) {
     const entry = price;
-    const sl    = Math.min(support * 0.994, price * 0.985);
+    // Стоп не более 2% от цены входа
+    const sl    = Math.max(Math.min(support * 0.994, price * 0.99), price * 0.98);
     const risk  = entry - sl;
     const tp1   = entry + risk * 1.5;
     const tp2   = entry + risk * 2.5;
@@ -1393,7 +1441,8 @@ function generateSignal(key, d, bulls, bears) {
 
   } else if (effectiveShort >= MIN_SCORE && effectiveShort > effectiveLong && filter.shortOk) {
     const entry = price;
-    const sl    = Math.max(resist * 1.006, price * 1.015);
+    // Стоп не более 2% от цены входа
+    const sl    = Math.min(Math.max(resist * 1.006, price * 1.01), price * 1.02);
     const risk  = sl - entry;
     const tp1   = entry - risk * 1.5;
     const tp2   = entry - risk * 2.5;
