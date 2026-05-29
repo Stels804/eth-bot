@@ -3,402 +3,223 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crypto Signal Bot v3.1</title>
+<title>Crypto Signal Bot v4</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&display=swap');
+:root {
+  --bg:#04080d; --panel:#080f18; --border:#0e2030; --border2:#142840;
+  --accent:#00b4ff; --accent2:#0080c0; --green:#00e887; --red:#ff2d55;
+  --yellow:#ffcc00; --purple:#a855f7; --orange:#ff8c00;
+  --text:#b8ccd8; --text2:#7a9bb0; --dim:#3a5060; --white:#e8f4ff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 10%,rgba(0,180,255,.06) 0%,transparent 45%),radial-gradient(ellipse at 85% 85%,rgba(0,232,135,.04) 0%,transparent 45%);pointer-events:none;z-index:0}
 
-  :root {
-    --bg: #04080d;
-    --panel: #080f18;
-    --panel2: #0b1622;
-    --border: #0e2030;
-    --border2: #142840;
-    --accent: #00b4ff;
-    --accent2: #0080c0;
-    --green: #00e887;
-    --red: #ff2d55;
-    --yellow: #ffcc00;
-    --purple: #a855f7;
-    --text: #b8ccd8;
-    --text2: #7a9bb0;
-    --dim: #3a5060;
-    --white: #e8f4ff;
-  }
+header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(4,8,13,.97);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.logo{font-size:16px;font-weight:800;color:var(--white);letter-spacing:3px;text-transform:uppercase}
+.logo em{color:var(--accent);font-style:normal}
+.logo small{font-size:10px;color:var(--dim);font-family:'Share Tech Mono',monospace;margin-left:6px;vertical-align:middle}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.tf-tabs{display:flex;gap:3px}
+.tf-tab{padding:3px 8px;font-size:11px;font-weight:700;border-radius:5px;cursor:pointer;color:var(--dim);background:transparent;border:1px solid var(--border);letter-spacing:1px;transition:all .15s;font-family:'Share Tech Mono',monospace}
+.tf-tab.active{background:var(--accent2);color:var(--white);border-color:var(--accent)}
+.status-pill{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--dim);font-family:'Share Tech Mono',monospace;background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:3px 8px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite}
+.dot.warn{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.dot.err{background:var(--red);box-shadow:0 0 6px var(--red);animation:none}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+.asset-tabs{display:flex;background:rgba(4,8,13,.95);border-bottom:1px solid var(--border);position:sticky;top:47px;z-index:99}
+.asset-tab{flex:1;padding:10px 0;text-align:center;font-size:14px;font-weight:800;letter-spacing:2px;cursor:pointer;color:var(--dim);border-bottom:2px solid transparent;transition:all .2s;position:relative}
+.asset-tab.active.eth-active{border-bottom-color:#627EEA;color:#8aa4ff}
+.asset-tab.active.btc-active{border-bottom-color:#F7931A;color:#ffa940}
+.asset-tab.active.sol-active{border-bottom-color:#9945FF;color:#b877ff}
+.asset-tab-sig{position:absolute;top:5px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.asset-tab-sig.long{background:var(--green);box-shadow:0 0 5px var(--green)}
+.asset-tab-sig.short{background:var(--red);box-shadow:0 0 5px var(--red)}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow Condensed', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
+.asset-panel{display:none}
+.asset-panel.visible{display:block}
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 15% 10%, rgba(0,180,255,0.06) 0%, transparent 45%),
-      radial-gradient(ellipse at 85% 85%, rgba(0,232,135,0.04) 0%, transparent 45%),
-      radial-gradient(ellipse at 50% 50%, rgba(168,85,247,0.02) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
+/* Cards */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;position:relative;overflow:hidden}
+.card-title{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-family:'Share Tech Mono',monospace;display:flex;align-items:center;gap:6px}
+.card-title::before{content:'';display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--accent)}
 
-  header {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(4,8,13,0.97);
-    backdrop-filter: blur(12px);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+/* Trend filter */
+.trend-filter-card{border-radius:10px;padding:10px 14px;margin-bottom:8px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:13px}
+.trend-filter-card.bull{border-color:rgba(0,232,135,.35);background:rgba(0,232,135,.05)}
+.trend-filter-card.bear{border-color:rgba(255,45,85,.35);background:rgba(255,45,85,.05)}
+.trend-filter-card.neut{border-color:rgba(255,204,0,.2);background:rgba(255,204,0,.03)}
+.trend-filter-card.blocked{border-color:rgba(255,45,85,.5);background:rgba(255,45,85,.08)}
+.tf-icon{font-size:18px}
+.tf-info{flex:1}
+.tf-title{font-weight:700;color:var(--white)}
+.tf-sub{font-size:11px;color:var(--text2);margin-top:2px;font-family:'Share Tech Mono',monospace}
+.tf-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap}
+.tf-badge.bull{background:rgba(0,232,135,.15);color:var(--green)}
+.tf-badge.bear{background:rgba(255,45,85,.15);color:var(--red)}
+.tf-badge.neut{background:rgba(255,204,0,.1);color:var(--yellow)}
 
-  .logo {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--white);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-  .logo em { color: var(--accent); font-style: normal; }
-  .logo small { font-size: 10px; color: var(--dim); font-family: 'Share Tech Mono', monospace; letter-spacing: 1px; vertical-align: middle; margin-left: 6px; }
+/* BTC context */
+.btc-context{border-radius:10px;padding:9px 13px;margin-bottom:8px;border:1px solid var(--border);background:rgba(247,147,26,.04);border-left:3px solid #F7931A;display:flex;align-items:center;gap:10px}
+.btc-ctx-label{font-size:10px;color:#F7931A;font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px}
+.btc-ctx-val{font-size:13px;font-weight:700;color:var(--white);margin-top:2px}
+.btc-ctx-sub{font-size:11px;color:var(--text2)}
+.btc-ctx-right{margin-left:auto;text-align:right}
 
-  .hdr-right { display: flex; align-items: center; gap: 8px; }
+/* Price card */
+.price-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:8px;position:relative;overflow:hidden}
+.price-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;opacity:.5}
+.eth-theme::after{background:linear-gradient(90deg,transparent,#627EEA,#8aa4ff,transparent)}
+.btc-theme::after{background:linear-gradient(90deg,transparent,#F7931A,#ffc060,transparent)}
+.sol-theme::after{background:linear-gradient(90deg,transparent,#9945FF,#b877ff,transparent)}
+.pair-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.pair{font-size:11px;color:var(--dim);letter-spacing:2px;font-family:'Share Tech Mono',monospace}
+.tf-badge-sm{font-size:11px;color:var(--accent);font-family:'Share Tech Mono',monospace;background:rgba(0,180,255,.1);padding:2px 8px;border-radius:4px;border:1px solid rgba(0,180,255,.2)}
+.price-row{display:flex;align-items:baseline;gap:10px}
+.price{font-size:34px;font-weight:800;color:var(--white);letter-spacing:-1px;font-family:'Share Tech Mono',monospace}
+.price-change{font-size:14px;font-weight:700;padding:2px 8px;border-radius:20px}
+.positive{background:rgba(0,232,135,.12);color:var(--green)}
+.negative{background:rgba(255,45,85,.12);color:var(--red)}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:10px}
+.stat{background:rgba(0,0,0,.25);border-radius:7px;padding:6px;text-align:center;border:1px solid var(--border)}
+.stat-label{font-size:8px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.stat-value{font-size:11px;font-weight:700;color:var(--text);margin-top:2px;font-family:'Share Tech Mono',monospace}
+.timer-bar{height:2px;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden;margin-top:10px}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;transition:width 1s linear}
+.next-scan{font-size:10px;color:var(--dim);font-family:'Share Tech Mono',monospace;margin-top:4px;text-align:right}
 
-  .tf-tabs { display: flex; gap: 3px; }
-  .tf-tab {
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 5px;
-    cursor: pointer;
-    color: var(--dim);
-    background: transparent;
-    border: 1px solid var(--border);
-    letter-spacing: 1px;
-    transition: all 0.15s;
-    font-family: 'Share Tech Mono', monospace;
-  }
-  .tf-tab.active { background: var(--accent2); color: var(--white); border-color: var(--accent); }
+/* Time filter */
+.time-filter-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-bottom:8px;font-size:12px;border:1px solid var(--border)}
+.time-filter-row.ok{background:rgba(0,232,135,.04);border-color:rgba(0,232,135,.2);color:var(--green)}
+.time-filter-row.warn{background:rgba(255,204,0,.04);border-color:rgba(255,204,0,.2);color:var(--yellow)}
 
-  .status-pill {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    color: var(--dim);
-    font-family: 'Share Tech Mono', monospace;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 3px 8px;
-  }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s infinite; }
-  .dot.warn { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
-  .dot.err { background: var(--red); box-shadow: 0 0 6px var(--red); animation: none; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* OI + Funding row */
+.oi-funding-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+.oi-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px}
+.oi-label{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.oi-val{font-size:14px;font-weight:700;font-family:'Share Tech Mono',monospace;margin-top:3px;color:var(--white)}
+.oi-sub{font-size:10px;color:var(--text2);margin-top:2px}
 
-  /* === ASSET TABS === */
-  .asset-tabs {
-    display: flex;
-    background: rgba(4,8,13,0.95);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 47px;
-    z-index: 99;
-  }
-  .asset-tab {
-    flex: 1;
-    padding: 10px 0;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    cursor: pointer;
-    color: var(--dim);
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .asset-tab.active { color: var(--white); border-bottom-color: var(--accent); }
-  .asset-tab.active.eth-active { border-bottom-color: #627EEA; color: #8aa4ff; }
-  .asset-tab.active.btc-active { border-bottom-color: #F7931A; color: #ffa940; }
-  .asset-tab.active.sol-active { border-bottom-color: #9945FF; color: #b877ff; }
-  .asset-tab-sig {
-    position: absolute;
-    top: 5px; right: 8px;
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--dim);
-  }
-  .asset-tab-sig.long { background: var(--green); box-shadow: 0 0 5px var(--green); }
-  .asset-tab-sig.short { background: var(--red); box-shadow: 0 0 5px var(--red); }
+/* MTF */
+.mtf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mtf-cell{background:rgba(0,0,0,.25);border-radius:8px;padding:9px;text-align:center;border:1px solid var(--border);transition:border-color .3s}
+.mtf-cell.bull{border-color:rgba(0,232,135,.3);background:rgba(0,232,135,.04)}
+.mtf-cell.bear{border-color:rgba(255,45,85,.3);background:rgba(255,45,85,.04)}
+.mtf-cell.neut{border-color:rgba(255,204,0,.2);background:rgba(255,204,0,.03)}
+.mtf-tf{font-size:9px;color:var(--dim);font-family:'Share Tech Mono',monospace}
+.mtf-sig{font-size:13px;font-weight:800;margin-top:3px;letter-spacing:1px}
+.mtf-sig.bull{color:var(--green)} .mtf-sig.bear{color:var(--red)} .mtf-sig.neut{color:var(--yellow)}
+.mtf-rsi{font-size:10px;color:var(--text2);font-family:'Share Tech Mono',monospace;margin-top:2px}
+.mtf-confirm{font-size:12px;margin-top:8px;color:var(--text2);text-align:center;padding:6px;background:rgba(0,0,0,.2);border-radius:6px}
 
-  main { padding: 10px; max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
+/* Indicators */
+.ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.ind-box{background:rgba(0,0,0,.25);border-radius:8px;padding:9px 11px;border:1px solid var(--border)}
+.ind-box-label{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.ind-box-val{font-size:16px;font-weight:700;margin-top:3px;font-family:'Share Tech Mono',monospace;color:var(--white)}
+.ind-box-sub{font-size:10px;color:var(--text2);margin-top:2px}
+.ind-bar-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.ind-bar-bg{flex:1;height:3px;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden}
+.ind-bar-fill{height:100%;border-radius:2px;transition:width .8s ease}
+.div-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:4px}
+.div-bull{background:rgba(0,232,135,.15);color:var(--green);border:1px solid rgba(0,232,135,.3)}
+.div-bear{background:rgba(255,45,85,.15);color:var(--red);border:1px solid rgba(255,45,85,.3)}
+.div-none{background:rgba(100,100,100,.1);color:var(--dim);border:1px solid var(--border)}
+.levels-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.lvl-box{background:rgba(0,0,0,.25);border-radius:8px;padding:7px 11px;border:1px solid var(--border)}
+.lvl-label{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.lvl-val{font-size:14px;font-weight:700;font-family:'Share Tech Mono',monospace;margin-top:2px}
 
-  .asset-panel { display: none; }
-  .asset-panel.visible { display: block; }
+/* Candle pattern badge */
+.candle-badge{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;margin-bottom:8px;font-size:12px;font-weight:700;border:1px solid var(--border);background:rgba(0,0,0,.2)}
+.candle-badge.bull{border-color:rgba(0,232,135,.3);color:var(--green);background:rgba(0,232,135,.05)}
+.candle-badge.bear{border-color:rgba(255,45,85,.3);color:var(--red);background:rgba(255,45,85,.05)}
+.candle-badge.none{color:var(--dim)}
 
-  /* === TREND FILTER BANNER === */
-  .trend-filter-card {
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-  }
-  .trend-filter-card.bull { border-color: rgba(0,232,135,0.35); background: rgba(0,232,135,0.05); }
-  .trend-filter-card.bear { border-color: rgba(255,45,85,0.35); background: rgba(255,45,85,0.05); }
-  .trend-filter-card.neut { border-color: rgba(255,204,0,0.2); background: rgba(255,204,0,0.03); }
-  .trend-filter-card.blocked { border-color: rgba(255,45,85,0.5); background: rgba(255,45,85,0.08); }
-  .tf-icon { font-size: 18px; }
-  .tf-info { flex: 1; }
-  .tf-title { font-weight: 700; color: var(--white); }
-  .tf-sub { font-size: 11px; color: var(--text2); margin-top: 2px; font-family: 'Share Tech Mono', monospace; }
-  .tf-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
-  .tf-badge.bull { background: rgba(0,232,135,0.15); color: var(--green); }
-  .tf-badge.bear { background: rgba(255,45,85,0.15); color: var(--red); }
-  .tf-badge.neut { background: rgba(255,204,0,0.1); color: var(--yellow); }
+/* Signal card */
+.signal-card{border-radius:14px;padding:16px;margin-bottom:8px;border:1px solid var(--border);background:var(--panel);position:relative;overflow:hidden;transition:border-color .4s}
+.signal-card.long{border-color:rgba(0,232,135,.35)}
+.signal-card.long::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,232,135,.06) 0%,transparent 55%);pointer-events:none}
+.signal-card.short{border-color:rgba(255,45,85,.35)}
+.signal-card.short::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,45,85,.06) 0%,transparent 55%);pointer-events:none}
+.signal-card.blocked{border-color:rgba(255,80,0,.3)}
+.signal-card.blocked::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,80,0,.04) 0%,transparent 55%);pointer-events:none}
+.signal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.signal-badge{font-size:17px;font-weight:800;letter-spacing:2px;padding:5px 12px;border-radius:8px;text-transform:uppercase}
+.badge-long{background:rgba(0,232,135,.18);color:var(--green);border:1px solid rgba(0,232,135,.4)}
+.badge-short{background:rgba(255,45,85,.18);color:var(--red);border:1px solid rgba(255,45,85,.4)}
+.badge-wait{background:rgba(255,204,0,.1);color:var(--yellow);border:1px solid rgba(255,204,0,.25)}
+.badge-blocked{background:rgba(255,80,0,.12);color:#ff8040;border:1px solid rgba(255,80,0,.25);font-size:13px}
+.sig-meta{text-align:right}
+.sig-score{font-size:12px;color:var(--text2);font-family:'Share Tech Mono',monospace}
+.sig-strength{display:flex;gap:3px;justify-content:flex-end;margin-top:4px}
+.sig-dot{width:9px;height:9px;border-radius:3px;background:var(--border2)}
+.sig-dot.active{background:var(--green);box-shadow:0 0 4px var(--green)}
+.sig-dot.active.short{background:var(--red);box-shadow:0 0 4px var(--red)}
+.sig-dot.active.wait{background:var(--yellow)}
+.entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.entry-box{background:rgba(0,0,0,.3);border-radius:8px;padding:9px}
+.entry-label{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.entry-val{font-size:16px;font-weight:700;margin-top:3px;font-family:'Share Tech Mono',monospace}
+.c-entry{color:var(--accent)} .c-sl{color:var(--red)} .c-tp1{color:var(--green)} .c-tp2{color:#5fffa0}
+.rr-badge{display:inline-block;font-size:10px;color:var(--purple);background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);padding:2px 8px;border-radius:4px;margin-bottom:9px;font-family:'Share Tech Mono',monospace}
+.atr-badge{display:inline-block;font-size:10px;color:var(--orange);background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.25);padding:2px 8px;border-radius:4px;margin-bottom:9px;margin-left:6px;font-family:'Share Tech Mono',monospace}
+.reason-box{background:rgba(0,0,0,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text);line-height:1.55;border-left:2px solid var(--accent)}
+.reason-box.blocked-box{border-left-color:#ff8040;color:#ff8040;background:rgba(255,80,0,.06)}
+.warn-row{font-size:11px;border-radius:6px;padding:6px 10px;margin-top:7px}
+.vol-warning{color:var(--yellow);background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.2)}
+.trend-warning{color:#ff8040;background:rgba(255,80,0,.08);border:1px solid rgba(255,80,0,.25)}
 
-  /* === BTC MARKET CONTEXT (for ETH/SOL) === */
-  .btc-context {
-    border-radius: 10px;
-    padding: 9px 13px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border);
-    background: rgba(247,147,26,0.04);
-    border-left: 3px solid #F7931A;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .btc-ctx-label { font-size: 10px; color: #F7931A; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
-  .btc-ctx-val { font-size: 13px; font-weight: 700; color: var(--white); margin-top: 2px; }
-  .btc-ctx-sub { font-size: 11px; color: var(--text2); }
-  .btc-ctx-right { margin-left: auto; text-align: right; }
+/* Signal tracker */
+.tracker-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px}
+.tracker-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.tracker-item:last-child{border-bottom:none}
+.t-dir{font-weight:800;font-size:11px;padding:2px 7px;border-radius:4px;min-width:44px;text-align:center}
+.t-long{background:rgba(0,232,135,.15);color:var(--green)}
+.t-short{background:rgba(255,45,85,.15);color:var(--red)}
+.t-info{flex:1;font-family:'Share Tech Mono',monospace;color:var(--text2);font-size:10px}
+.t-result{font-weight:700;font-size:11px;padding:2px 7px;border-radius:4px}
+.t-win{background:rgba(0,232,135,.15);color:var(--green)}
+.t-loss{background:rgba(255,45,85,.15);color:var(--red)}
+.t-open{background:rgba(255,204,0,.1);color:var(--yellow)}
+.t-exp{background:rgba(100,100,100,.15);color:var(--dim)}
+.tracker-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px}
+.ts-box{background:rgba(0,0,0,.25);border-radius:7px;padding:7px;text-align:center;border:1px solid var(--border)}
+.ts-label{font-size:8px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.ts-val{font-size:14px;font-weight:700;margin-top:2px;font-family:'Share Tech Mono',monospace}
 
-  /* === PRICE CARD === */
-  .price-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 8px;
-    position: relative;
-    overflow: hidden;
-  }
-  .price-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent 0%, var(--accent) 40%, var(--green) 70%, transparent 100%);
-    opacity: 0.5;
-  }
-  .price-card.eth-theme::after { background: linear-gradient(90deg, transparent, #627EEA, #8aa4ff, transparent); }
-  .price-card.btc-theme::after { background: linear-gradient(90deg, transparent, #F7931A, #ffc060, transparent); }
-  .price-card.sol-theme::after { background: linear-gradient(90deg, transparent, #9945FF, #b877ff, transparent); }
+/* Controls */
+.controls{display:flex;gap:8px;margin-bottom:8px}
+.btn{flex:1;padding:12px;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.btn-primary{background:linear-gradient(135deg,#0070a0,#00b4ff);color:#000}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(0,180,255,.3)}
+.btn-secondary{background:var(--panel);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent2)}
+.btn-danger{background:rgba(255,45,85,.1);color:var(--red);border:1px solid rgba(255,45,85,.2)}
 
-  .pair-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .pair { font-size: 11px; color: var(--dim); letter-spacing: 2px; font-family: 'Share Tech Mono', monospace; }
-  .timeframe-badge { font-size: 11px; color: var(--accent); font-family: 'Share Tech Mono', monospace; background: rgba(0,180,255,0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(0,180,255,0.2); }
+/* TG Setup */
+.tg-setup{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:8px}
+.tg-setup input{width:100%;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;margin:5px 0;outline:none;transition:border-color .2s}
+.tg-setup input:focus{border-color:var(--accent)}
 
-  .price-row { display: flex; align-items: baseline; gap: 10px; }
-  .price { font-size: 34px; font-weight: 800; color: var(--white); letter-spacing: -1px; font-family: 'Share Tech Mono', monospace; }
-  .price-change { font-size: 14px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-  .positive { background: rgba(0,232,135,0.12); color: var(--green); }
-  .negative { background: rgba(255,45,85,0.12); color: var(--red); }
+/* Log */
+.log-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:8px}
+.log-entry{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);padding:4px 0;border-bottom:1px solid rgba(14,32,48,.6);display:flex;gap:8px}
+.log-entry:last-child{border-bottom:none}
+.log-time{color:var(--accent2);min-width:38px}
+.log-ok{color:var(--green)} .log-warn{color:var(--yellow)} .log-info{color:var(--text2)}
 
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; margin-top: 10px; }
-  .stat { background: rgba(0,0,0,0.25); border-radius: 7px; padding: 7px; text-align: center; border: 1px solid var(--border); }
-  .stat-label { font-size: 8px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
-  .stat-value { font-size: 12px; font-weight: 700; color: var(--text); margin-top: 2px; font-family: 'Share Tech Mono', monospace; }
-
-  .timer-bar { height: 2px; background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden; margin-top: 10px; }
-  .timer-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 2px; transition: width 1s linear; }
-  .next-scan { font-size: 10px; color: var(--dim); font-family: 'Share Tech Mono', monospace; margin-top: 4px; text-align: right; }
-
-  /* === MTF PANEL === */
-  .mtf-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 8px;
-  }
-  .card-title { font-size: 10px; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; font-family: 'Share Tech Mono', monospace; display: flex; align-items: center; gap: 6px; }
-  .card-title::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 2px; background: var(--accent); }
-
-  .mtf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .mtf-cell {
-    background: rgba(0,0,0,0.25);
-    border-radius: 8px;
-    padding: 9px;
-    text-align: center;
-    border: 1px solid var(--border);
-    transition: border-color 0.3s;
-  }
-  .mtf-cell.bull { border-color: rgba(0,232,135,0.3); background: rgba(0,232,135,0.04); }
-  .mtf-cell.bear { border-color: rgba(255,45,85,0.3); background: rgba(255,45,85,0.04); }
-  .mtf-cell.neut { border-color: rgba(255,204,0,0.2); background: rgba(255,204,0,0.03); }
-  .mtf-tf { font-size: 9px; color: var(--dim); font-family: 'Share Tech Mono', monospace; }
-  .mtf-sig { font-size: 14px; font-weight: 800; margin-top: 3px; letter-spacing: 1px; }
-  .mtf-sig.bull { color: var(--green); }
-  .mtf-sig.bear { color: var(--red); }
-  .mtf-sig.neut { color: var(--yellow); }
-  .mtf-rsi { font-size: 10px; color: var(--text2); font-family: 'Share Tech Mono', monospace; margin-top: 2px; }
-  .mtf-confirm { font-size: 12px; margin-top: 8px; color: var(--text2); text-align: center; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 6px; }
-
-  /* === INDICATORS === */
-  .indicators-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 8px;
-  }
-
-  .ind-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-  .ind-box {
-    background: rgba(0,0,0,0.25);
-    border-radius: 8px;
-    padding: 9px 11px;
-    border: 1px solid var(--border);
-  }
-  .ind-box-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
-  .ind-box-val { font-size: 16px; font-weight: 700; margin-top: 3px; font-family: 'Share Tech Mono', monospace; color: var(--white); }
-  .ind-box-sub { font-size: 10px; color: var(--text2); margin-top: 2px; }
-
-  .ind-bar-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-  .ind-bar-bg { flex: 1; height: 3px; background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden; }
-  .ind-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
-
-  .div-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
-  .div-bull { background: rgba(0,232,135,0.15); color: var(--green); border: 1px solid rgba(0,232,135,0.3); }
-  .div-bear { background: rgba(255,45,85,0.15); color: var(--red); border: 1px solid rgba(255,45,85,0.3); }
-  .div-none { background: rgba(100,100,100,0.1); color: var(--dim); border: 1px solid var(--border); }
-
-  .levels-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 7px; }
-  .lvl-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 7px 11px; border: 1px solid var(--border); }
-  .lvl-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
-  .lvl-val { font-size: 14px; font-weight: 700; font-family: 'Share Tech Mono', monospace; margin-top: 2px; }
-
-  /* === SIGNAL === */
-  .signal-card {
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border);
-    background: var(--panel);
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.4s, background 0.4s;
-  }
-  .signal-card.long { border-color: rgba(0,232,135,0.35); }
-  .signal-card.long::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, rgba(0,232,135,0.06) 0%, transparent 55%); pointer-events:none; }
-  .signal-card.short { border-color: rgba(255,45,85,0.35); }
-  .signal-card.short::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,45,85,0.06) 0%, transparent 55%); pointer-events:none; }
-  .signal-card.wait { border-color: rgba(255,204,0,0.15); }
-  .signal-card.blocked { border-color: rgba(255,45,85,0.2); }
-  .signal-card.blocked::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,100,0,0.04) 0%, transparent 55%); pointer-events:none; }
-
-  .signal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-
-  .signal-badge { font-size: 18px; font-weight: 800; letter-spacing: 2px; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; }
-  .badge-long { background: rgba(0,232,135,0.18); color: var(--green); border: 1px solid rgba(0,232,135,0.4); }
-  .badge-short { background: rgba(255,45,85,0.18); color: var(--red); border: 1px solid rgba(255,45,85,0.4); }
-  .badge-wait { background: rgba(255,204,0,0.1); color: var(--yellow); border: 1px solid rgba(255,204,0,0.25); }
-  .badge-blocked { background: rgba(255,80,0,0.12); color: #ff8040; border: 1px solid rgba(255,80,0,0.25); font-size: 14px; }
-
-  .sig-meta { text-align: right; }
-  .sig-score { font-size: 12px; color: var(--text2); font-family: 'Share Tech Mono', monospace; }
-  .sig-strength { display: flex; gap: 3px; justify-content: flex-end; margin-top: 4px; }
-  .sig-dot { width: 9px; height: 9px; border-radius: 3px; background: var(--border2); }
-  .sig-dot.active { background: var(--green); box-shadow: 0 0 4px var(--green); }
-  .sig-dot.active.short { background: var(--red); box-shadow: 0 0 4px var(--red); }
-  .sig-dot.active.wait { background: var(--yellow); }
-
-  .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 10px; }
-  .entry-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 9px; }
-  .entry-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
-  .entry-val { font-size: 16px; font-weight: 700; margin-top: 3px; font-family: 'Share Tech Mono', monospace; }
-  .c-entry { color: var(--accent); }
-  .c-sl { color: var(--red); }
-  .c-tp1 { color: var(--green); }
-  .c-tp2 { color: #5fffa0; }
-
-  .rr-badge { display: inline-block; font-size: 10px; color: var(--purple); background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.25); padding: 2px 8px; border-radius: 4px; margin-bottom: 9px; font-family: 'Share Tech Mono', monospace; }
-
-  .reason-box {
-    background: rgba(0,0,0,0.2);
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 12px;
-    color: var(--text);
-    line-height: 1.55;
-    border-left: 2px solid var(--accent);
-  }
-  .reason-box.blocked-box { border-left-color: #ff8040; color: #ff8040; background: rgba(255,80,0,0.06); }
-
-  .vol-warning { font-size: 11px; color: var(--yellow); background: rgba(255,204,0,0.08); border: 1px solid rgba(255,204,0,0.2); border-radius: 6px; padding: 6px 10px; margin-top: 7px; }
-  .trend-warning { font-size: 11px; color: #ff8040; background: rgba(255,80,0,0.08); border: 1px solid rgba(255,80,0,0.25); border-radius: 6px; padding: 6px 10px; margin-top: 7px; }
-
-  /* === CONTROLS === */
-  .controls { display: flex; gap: 8px; margin-bottom: 8px; }
-  .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
-  .btn-primary { background: linear-gradient(135deg, #0070a0, #00b4ff); color: #000; }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(0,180,255,0.3); }
-  .btn-secondary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent2); }
-
-  /* === TG SETUP === */
-  .tg-setup {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 8px;
-  }
-  .tg-setup input {
-    width: 100%;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    margin: 5px 0;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .tg-setup input:focus { border-color: var(--accent); }
-
-  /* === LOG === */
-  .log-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 8px; }
-  .log-entry { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--dim); padding: 4px 0; border-bottom: 1px solid rgba(14,32,48,0.6); display: flex; gap: 8px; }
-  .log-entry:last-child { border-bottom: none; }
-  .log-time { color: var(--accent2); min-width: 38px; }
-  .log-ok { color: var(--green); }
-  .log-warn { color: var(--yellow); }
-  .log-info { color: var(--text2); }
-
-  .hidden { display: none !important; }
+.hidden{display:none!important}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">CRYPTO<em>/</em>SIG <small>v3.1</small></div>
+  <div class="logo">CRYPTO<em>/</em>SIG <small>v4.0</small></div>
   <div class="hdr-right">
     <div class="tf-tabs">
       <div class="tf-tab active" onclick="switchTF('15')" id="tf15">15M</div>
@@ -412,401 +233,279 @@
   </div>
 </header>
 
-<!-- Asset Tabs -->
 <div class="asset-tabs">
-  <div class="asset-tab active eth-active" onclick="switchAsset('ETH')" id="assetTabETH">
-    ETH
-    <span class="asset-tab-sig" id="tabSigETH"></span>
-  </div>
-  <div class="asset-tab" onclick="switchAsset('BTC')" id="assetTabBTC">
-    BTC
-    <span class="asset-tab-sig" id="tabSigBTC"></span>
-  </div>
-  <div class="asset-tab" onclick="switchAsset('SOL')" id="assetTabSOL">
-    SOL
-    <span class="asset-tab-sig" id="tabSigSOL"></span>
-  </div>
+  <div class="asset-tab active eth-active" onclick="switchAsset('ETH')" id="assetTabETH">ETH<span class="asset-tab-sig" id="tabSigETH"></span></div>
+  <div class="asset-tab" onclick="switchAsset('BTC')" id="assetTabBTC">BTC<span class="asset-tab-sig" id="tabSigBTC"></span></div>
+  <div class="asset-tab" onclick="switchAsset('SOL')" id="assetTabSOL">SOL<span class="asset-tab-sig" id="tabSigSOL"></span></div>
+  <div class="asset-tab" onclick="switchAsset('STAT')" id="assetTabSTAT">📊</div>
 </div>
 
 <main>
+<div class="tg-setup" id="tgSetup">
+  <div class="card-title">Настройка Telegram</div>
+  <input type="text" id="tgToken" placeholder="Токен бота (от BotFather)" />
+  <input type="text" id="tgChatId" placeholder="Chat ID" />
+  <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:8px;width:100%">СОХРАНИТЬ И ЗАПУСТИТЬ</button>
+</div>
 
-  <!-- Telegram Setup -->
-  <div class="tg-setup" id="tgSetup">
-    <div class="card-title">Настройка Telegram</div>
-    <input type="text" id="tgToken" placeholder="Токен бота (от BotFather)" />
-    <input type="text" id="tgChatId" placeholder="Chat ID" value="1336922235" />
-    <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:8px; width:100%">СОХРАНИТЬ И ЗАПУСТИТЬ</button>
+<!-- TIME FILTER (global) -->
+<div class="time-filter-row ok" id="timeFilterRow">
+  <span>🕐</span><span id="timeFilterText">Время торговли: активное</span>
+</div>
+
+<!-- ETH PANEL -->
+<div class="asset-panel visible" id="panelETH">
+  <div class="btc-context" id="btcContextETH">
+    <div><div class="btc-ctx-label">BTC рынок</div><div class="btc-ctx-val" id="btcCtxTrendETH">Загрузка...</div></div>
+    <div class="btc-ctx-right"><div class="btc-ctx-sub" id="btcCtxPriceETH">--</div><div class="btc-ctx-sub" id="btcCtxRsiETH">RSI --</div></div>
   </div>
-
-  <!-- ========== ETH PANEL ========== -->
-  <div class="asset-panel visible" id="panelETH">
-
-    <!-- BTC Market Context -->
-    <div class="btc-context" id="btcContextETH">
-      <div>
-        <div class="btc-ctx-label">BTC рынок</div>
-        <div class="btc-ctx-val" id="btcCtxTrendETH">Загрузка...</div>
-      </div>
-      <div class="btc-ctx-right">
-        <div class="btc-ctx-sub" id="btcCtxPriceETH">--</div>
-        <div class="btc-ctx-sub" id="btcCtxRsiETH">RSI --</div>
-      </div>
+  <div class="trend-filter-card neut" id="trendFilterETH">
+    <div class="tf-icon">🔍</div>
+    <div class="tf-info"><div class="tf-title" id="trendFilterTitleETH">Фильтр тренда</div><div class="tf-sub" id="trendFilterSubETH">Анализ...</div></div>
+    <div class="tf-badge neut" id="trendFilterBadgeETH">ЖДЁМ</div>
+  </div>
+  <div class="price-card eth-theme">
+    <div class="pair-row"><div class="pair">ETH/USDT · BYBIT</div><div class="tf-badge-sm" id="tfBadgeETH">1H</div></div>
+    <div class="price-row"><div class="price" id="priceETH">--.--</div><div class="price-change" id="changeETH">--</div></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24ETH">--</div></div>
+      <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24ETH">--</div></div>
+      <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctETH">--</div></div>
+      <div class="stat"><div class="stat-label">ATR%</div><div class="stat-value" id="atrPctETH">--</div></div>
+      <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundETH">--</div></div>
     </div>
-
-    <!-- Trend Filter -->
-    <div class="trend-filter-card neut" id="trendFilterETH">
-      <div class="tf-icon">🔍</div>
-      <div class="tf-info">
-        <div class="tf-title" id="trendFilterTitleETH">Фильтр тренда</div>
-        <div class="tf-sub" id="trendFilterSubETH">Анализ старших ТФ...</div>
-      </div>
-      <div class="tf-badge neut" id="trendFilterBadgeETH">ЖДЁМ</div>
+    <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+    <div class="next-scan" id="nextScan">Следующий скан: --</div>
+  </div>
+  <div class="oi-funding-row">
+    <div class="oi-box"><div class="oi-label">Open Interest</div><div class="oi-val" id="oiETH">--</div><div class="oi-sub" id="oiChangeETH">--</div></div>
+    <div class="oi-box"><div class="oi-label">Funding Rate</div><div class="oi-val" id="fundValETH">--</div><div class="oi-sub" id="fundSignalETH">--</div></div>
+    <div class="oi-box"><div class="oi-label">Свечной паттерн</div><div class="oi-val" id="patternValETH">--</div><div class="oi-sub" id="patternSubETH">--</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Мульти-таймфрейм · ETH</div>
+    <div class="mtf-grid">
+      <div class="mtf-cell" id="mtfETH15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfETH15sig">--</div><div class="mtf-rsi" id="mtfETH15rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfETH60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfETH60sig">--</div><div class="mtf-rsi" id="mtfETH60rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfETH240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfETH240sig">--</div><div class="mtf-rsi" id="mtfETH240rsi">RSI --</div></div>
     </div>
-
-    <!-- Price Card -->
-    <div class="price-card eth-theme">
-      <div class="pair-row">
-        <div class="pair">ETH/USDT · BYBIT</div>
-        <div class="timeframe-badge" id="tfBadgeETH">1H</div>
-      </div>
-      <div class="price-row">
-        <div class="price" id="priceETH">--.--</div>
-        <div class="price-change" id="changeETH">--</div>
-      </div>
-      <div class="stats-row">
-        <div class="stat"><div class="stat-label">MAX 24Ч</div><div class="stat-value" id="high24ETH">--</div></div>
-        <div class="stat"><div class="stat-label">MIN 24Ч</div><div class="stat-value" id="low24ETH">--</div></div>
-        <div class="stat"><div class="stat-label">ОБЪЁМ</div><div class="stat-value" id="vol24ETH">--</div></div>
-        <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctETH">--</div></div>
-      </div>
-      <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
-      <div class="next-scan" id="nextScan">Следующий скан: --</div>
+    <div class="mtf-confirm" id="mtfConfirmETH">Загрузка...</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Индикаторы · ETH</div>
+    <div class="ind-grid">
+      <div class="ind-box"><div class="ind-box-label">RSI (14)</div><div class="ind-box-val" id="rsiETH">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarETH"></div></div></div><div class="ind-box-sub" id="rsiZoneETH">--</div><div class="div-badge div-none" id="rsiDivETH">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">MACD</div><div class="ind-box-val" id="macdETH">--</div><div class="ind-box-sub" id="macdSubETH">--</div><div class="div-badge div-none" id="macdDivETH">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">EMA 20/50</div><div class="ind-box-val" id="emaETH">--</div><div class="ind-box-sub" id="emaSubETH">--</div><div class="div-badge div-none" id="emaCrossETH">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">Объём vs avg20</div><div class="ind-box-val" id="volValETH">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarETH"></div></div></div><div class="ind-box-sub" id="volSubETH">--</div></div>
     </div>
-
-    <!-- MTF -->
-    <div class="mtf-card">
-      <div class="card-title">Мульти-таймфрейм · ETH</div>
-      <div class="mtf-grid">
-        <div class="mtf-cell" id="mtfETH15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfETH15sig">--</div><div class="mtf-rsi" id="mtfETH15rsi">RSI --</div></div>
-        <div class="mtf-cell" id="mtfETH60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfETH60sig">--</div><div class="mtf-rsi" id="mtfETH60rsi">RSI --</div></div>
-        <div class="mtf-cell" id="mtfETH240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfETH240sig">--</div><div class="mtf-rsi" id="mtfETH240rsi">RSI --</div></div>
-      </div>
-      <div class="mtf-confirm" id="mtfConfirmETH">Загрузка...</div>
+    <div class="levels-row">
+      <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportETH">--</div></div>
+      <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistETH">--</div></div>
     </div>
-
-    <!-- Indicators -->
-    <div class="indicators-card">
-      <div class="card-title">Индикаторы · ETH</div>
-      <div class="ind-grid">
-        <div class="ind-box">
-          <div class="ind-box-label">RSI (14)</div>
-          <div class="ind-box-val" id="rsiETH">--</div>
-          <div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarETH" style="width:50%"></div></div></div>
-          <div class="ind-box-sub" id="rsiZoneETH">--</div>
-          <div class="div-badge div-none" id="rsiDivETH">Дивергенция: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">MACD</div>
-          <div class="ind-box-val" id="macdETH">--</div>
-          <div class="ind-box-sub" id="macdSubETH">--</div>
-          <div class="div-badge div-none" id="macdDivETH">Пересечение: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">EMA 20 / 50</div>
-          <div class="ind-box-val" id="emaETH">--</div>
-          <div class="ind-box-sub" id="emaSubETH">--</div>
-          <div class="div-badge div-none" id="emaCrossETH">EMA: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">Объём (vs avg20)</div>
-          <div class="ind-box-val" id="volValETH">--</div>
-          <div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarETH" style="width:50%"></div></div></div>
-          <div class="ind-box-sub" id="volSubETH">--</div>
-        </div>
-      </div>
-      <div class="levels-row">
-        <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportETH">--</div></div>
-        <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistETH">--</div></div>
-      </div>
+  </div>
+  <div class="signal-card wait" id="signalCardETH">
+    <div class="signal-header">
+      <div class="signal-badge badge-wait" id="signalBadgeETH">АНАЛИЗ</div>
+      <div class="sig-meta"><div class="sig-score" id="sigScoreETH">--</div><div class="sig-strength" id="sigStrengthETH"></div></div>
     </div>
-
-    <!-- Signal -->
-    <div class="signal-card wait" id="signalCardETH">
-      <div class="signal-header">
-        <div class="signal-badge badge-wait" id="signalBadgeETH">АНАЛИЗ</div>
-        <div class="sig-meta">
-          <div class="sig-score" id="sigScoreETH">--</div>
-          <div class="sig-strength" id="sigStrengthETH">
-            <div class="sig-dot"></div><div class="sig-dot"></div><div class="sig-dot"></div>
-            <div class="sig-dot"></div><div class="sig-dot"></div><div class="sig-dot"></div>
-          </div>
-        </div>
-      </div>
-      <div class="entry-grid">
-        <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entryETH">--</div></div>
-        <div class="entry-box"><div class="entry-label">Стоп-лосс</div><div class="entry-val c-sl" id="slETH">--</div></div>
-        <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1ETH">--</div></div>
-        <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2ETH">--</div></div>
-      </div>
-      <div class="rr-badge" id="rrETH">R:R --</div>
-      <div class="reason-box" id="reasonETH">Ожидание данных...</div>
-      <div class="vol-warning hidden" id="volWarnETH">⚠ Низкий объём — сигнал менее надёжен</div>
-      <div class="trend-warning hidden" id="trendWarnETH">🚫 Сигнал заблокирован фильтром тренда</div>
+    <div class="entry-grid">
+      <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entryETH">--</div></div>
+      <div class="entry-box"><div class="entry-label">Стоп (ATR)</div><div class="entry-val c-sl" id="slETH">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1ETH">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2ETH">--</div></div>
     </div>
+    <div><span class="rr-badge" id="rrETH">R:R --</span><span class="atr-badge" id="atrBadgeETH">ATR --</span></div>
+    <div class="reason-box" id="reasonETH">Ожидание данных...</div>
+    <div class="warn-row vol-warning hidden" id="volWarnETH">⚠ Низкий объём</div>
+    <div class="warn-row trend-warning hidden" id="trendWarnETH">🚫 Заблокирован</div>
+  </div>
+</div>
 
-  </div><!-- /panelETH -->
-
-  <!-- ========== BTC PANEL ========== -->
-  <div class="asset-panel" id="panelBTC">
-
-    <!-- Trend Filter -->
-    <div class="trend-filter-card neut" id="trendFilterBTC">
-      <div class="tf-icon">🔍</div>
-      <div class="tf-info">
-        <div class="tf-title" id="trendFilterTitleBTC">Фильтр тренда</div>
-        <div class="tf-sub" id="trendFilterSubBTC">Анализ старших ТФ...</div>
-      </div>
-      <div class="tf-badge neut" id="trendFilterBadgeBTC">ЖДЁМ</div>
+<!-- BTC PANEL -->
+<div class="asset-panel" id="panelBTC">
+  <div class="trend-filter-card neut" id="trendFilterBTC">
+    <div class="tf-icon">🔍</div>
+    <div class="tf-info"><div class="tf-title" id="trendFilterTitleBTC">Фильтр тренда</div><div class="tf-sub" id="trendFilterSubBTC">Анализ...</div></div>
+    <div class="tf-badge neut" id="trendFilterBadgeBTC">ЖДЁМ</div>
+  </div>
+  <div class="price-card btc-theme">
+    <div class="pair-row"><div class="pair">BTC/USDT · BYBIT</div><div class="tf-badge-sm" id="tfBadgeBTC">1H</div></div>
+    <div class="price-row"><div class="price" id="priceBTC">--.--</div><div class="price-change" id="changeBTC">--</div></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24BTC">--</div></div>
+      <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24BTC">--</div></div>
+      <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctBTC">--</div></div>
+      <div class="stat"><div class="stat-label">ATR%</div><div class="stat-value" id="atrPctBTC">--</div></div>
+      <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundBTC">--</div></div>
     </div>
-
-    <div class="price-card btc-theme">
-      <div class="pair-row">
-        <div class="pair">BTC/USDT · BYBIT</div>
-        <div class="timeframe-badge" id="tfBadgeBTC">1H</div>
-      </div>
-      <div class="price-row">
-        <div class="price" id="priceBTC">--.--</div>
-        <div class="price-change" id="changeBTC">--</div>
-      </div>
-      <div class="stats-row">
-        <div class="stat"><div class="stat-label">MAX 24Ч</div><div class="stat-value" id="high24BTC">--</div></div>
-        <div class="stat"><div class="stat-label">MIN 24Ч</div><div class="stat-value" id="low24BTC">--</div></div>
-        <div class="stat"><div class="stat-label">ОБЪЁМ</div><div class="stat-value" id="vol24BTC">--</div></div>
-        <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctBTC">--</div></div>
-      </div>
+  </div>
+  <div class="oi-funding-row">
+    <div class="oi-box"><div class="oi-label">Open Interest</div><div class="oi-val" id="oiBTC">--</div><div class="oi-sub" id="oiChangeBTC">--</div></div>
+    <div class="oi-box"><div class="oi-label">Funding Rate</div><div class="oi-val" id="fundValBTC">--</div><div class="oi-sub" id="fundSignalBTC">--</div></div>
+    <div class="oi-box"><div class="oi-label">Свечной паттерн</div><div class="oi-val" id="patternValBTC">--</div><div class="oi-sub" id="patternSubBTC">--</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Мульти-таймфрейм · BTC</div>
+    <div class="mtf-grid">
+      <div class="mtf-cell" id="mtfBTC15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfBTC15sig">--</div><div class="mtf-rsi" id="mtfBTC15rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfBTC60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfBTC60sig">--</div><div class="mtf-rsi" id="mtfBTC60rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfBTC240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfBTC240sig">--</div><div class="mtf-rsi" id="mtfBTC240rsi">RSI --</div></div>
     </div>
-
-    <div class="mtf-card">
-      <div class="card-title">Мульти-таймфрейм · BTC</div>
-      <div class="mtf-grid">
-        <div class="mtf-cell" id="mtfBTC15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfBTC15sig">--</div><div class="mtf-rsi" id="mtfBTC15rsi">RSI --</div></div>
-        <div class="mtf-cell" id="mtfBTC60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfBTC60sig">--</div><div class="mtf-rsi" id="mtfBTC60rsi">RSI --</div></div>
-        <div class="mtf-cell" id="mtfBTC240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfBTC240sig">--</div><div class="mtf-rsi" id="mtfBTC240rsi">RSI --</div></div>
-      </div>
-      <div class="mtf-confirm" id="mtfConfirmBTC">Загрузка...</div>
+    <div class="mtf-confirm" id="mtfConfirmBTC">Загрузка...</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Индикаторы · BTC</div>
+    <div class="ind-grid">
+      <div class="ind-box"><div class="ind-box-label">RSI (14)</div><div class="ind-box-val" id="rsiBTC">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarBTC"></div></div></div><div class="ind-box-sub" id="rsiZoneBTC">--</div><div class="div-badge div-none" id="rsiDivBTC">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">MACD</div><div class="ind-box-val" id="macdBTC">--</div><div class="ind-box-sub" id="macdSubBTC">--</div><div class="div-badge div-none" id="macdDivBTC">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">EMA 20/50</div><div class="ind-box-val" id="emaBTC">--</div><div class="ind-box-sub" id="emaSubBTC">--</div><div class="div-badge div-none" id="emaCrossBTC">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">Объём vs avg20</div><div class="ind-box-val" id="volValBTC">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarBTC"></div></div></div><div class="ind-box-sub" id="volSubBTC">--</div></div>
     </div>
-
-    <div class="indicators-card">
-      <div class="card-title">Индикаторы · BTC</div>
-      <div class="ind-grid">
-        <div class="ind-box">
-          <div class="ind-box-label">RSI (14)</div>
-          <div class="ind-box-val" id="rsiBTC">--</div>
-          <div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarBTC" style="width:50%"></div></div></div>
-          <div class="ind-box-sub" id="rsiZoneBTC">--</div>
-          <div class="div-badge div-none" id="rsiDivBTC">Дивергенция: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">MACD</div>
-          <div class="ind-box-val" id="macdBTC">--</div>
-          <div class="ind-box-sub" id="macdSubBTC">--</div>
-          <div class="div-badge div-none" id="macdDivBTC">Пересечение: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">EMA 20 / 50</div>
-          <div class="ind-box-val" id="emaBTC">--</div>
-          <div class="ind-box-sub" id="emaSubBTC">--</div>
-          <div class="div-badge div-none" id="emaCrossBTC">EMA: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">Объём (vs avg20)</div>
-          <div class="ind-box-val" id="volValBTC">--</div>
-          <div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarBTC" style="width:50%"></div></div></div>
-          <div class="ind-box-sub" id="volSubBTC">--</div>
-        </div>
-      </div>
-      <div class="levels-row">
-        <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportBTC">--</div></div>
-        <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistBTC">--</div></div>
-      </div>
+    <div class="levels-row">
+      <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportBTC">--</div></div>
+      <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistBTC">--</div></div>
     </div>
-
-    <div class="signal-card wait" id="signalCardBTC">
-      <div class="signal-header">
-        <div class="signal-badge badge-wait" id="signalBadgeBTC">АНАЛИЗ</div>
-        <div class="sig-meta">
-          <div class="sig-score" id="sigScoreBTC">--</div>
-          <div class="sig-strength" id="sigStrengthBTC">
-            <div class="sig-dot"></div><div class="sig-dot"></div><div class="sig-dot"></div>
-            <div class="sig-dot"></div><div class="sig-dot"></div><div class="sig-dot"></div>
-          </div>
-        </div>
-      </div>
-      <div class="entry-grid">
-        <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entryBTC">--</div></div>
-        <div class="entry-box"><div class="entry-label">Стоп-лосс</div><div class="entry-val c-sl" id="slBTC">--</div></div>
-        <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1BTC">--</div></div>
-        <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2BTC">--</div></div>
-      </div>
-      <div class="rr-badge" id="rrBTC">R:R --</div>
-      <div class="reason-box" id="reasonBTC">Ожидание данных...</div>
-      <div class="vol-warning hidden" id="volWarnBTC">⚠ Низкий объём — сигнал менее надёжен</div>
-      <div class="trend-warning hidden" id="trendWarnBTC">🚫 Сигнал заблокирован фильтром тренда</div>
+  </div>
+  <div class="signal-card wait" id="signalCardBTC">
+    <div class="signal-header">
+      <div class="signal-badge badge-wait" id="signalBadgeBTC">АНАЛИЗ</div>
+      <div class="sig-meta"><div class="sig-score" id="sigScoreBTC">--</div><div class="sig-strength" id="sigStrengthBTC"></div></div>
     </div>
-
-  </div><!-- /panelBTC -->
-
-  <!-- ========== SOL PANEL ========== -->
-  <div class="asset-panel" id="panelSOL">
-
-    <div class="btc-context" id="btcContextSOL">
-      <div>
-        <div class="btc-ctx-label">BTC рынок</div>
-        <div class="btc-ctx-val" id="btcCtxTrendSOL">Загрузка...</div>
-      </div>
-      <div class="btc-ctx-right">
-        <div class="btc-ctx-sub" id="btcCtxPriceSOL">--</div>
-        <div class="btc-ctx-sub" id="btcCtxRsiSOL">RSI --</div>
-      </div>
+    <div class="entry-grid">
+      <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entryBTC">--</div></div>
+      <div class="entry-box"><div class="entry-label">Стоп (ATR)</div><div class="entry-val c-sl" id="slBTC">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1BTC">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2BTC">--</div></div>
     </div>
+    <div><span class="rr-badge" id="rrBTC">R:R --</span><span class="atr-badge" id="atrBadgeBTC">ATR --</span></div>
+    <div class="reason-box" id="reasonBTC">Ожидание данных...</div>
+    <div class="warn-row vol-warning hidden" id="volWarnBTC">⚠ Низкий объём</div>
+    <div class="warn-row trend-warning hidden" id="trendWarnBTC">🚫 Заблокирован</div>
+  </div>
+</div>
 
-    <div class="trend-filter-card neut" id="trendFilterSOL">
-      <div class="tf-icon">🔍</div>
-      <div class="tf-info">
-        <div class="tf-title" id="trendFilterTitleSOL">Фильтр тренда</div>
-        <div class="tf-sub" id="trendFilterSubSOL">Анализ старших ТФ...</div>
-      </div>
-      <div class="tf-badge neut" id="trendFilterBadgeSOL">ЖДЁМ</div>
+<!-- SOL PANEL -->
+<div class="asset-panel" id="panelSOL">
+  <div class="btc-context" id="btcContextSOL">
+    <div><div class="btc-ctx-label">BTC рынок</div><div class="btc-ctx-val" id="btcCtxTrendSOL">Загрузка...</div></div>
+    <div class="btc-ctx-right"><div class="btc-ctx-sub" id="btcCtxPriceSOL">--</div><div class="btc-ctx-sub" id="btcCtxRsiSOL">RSI --</div></div>
+  </div>
+  <div class="trend-filter-card neut" id="trendFilterSOL">
+    <div class="tf-icon">🔍</div>
+    <div class="tf-info"><div class="tf-title" id="trendFilterTitleSOL">Фильтр тренда</div><div class="tf-sub" id="trendFilterSubSOL">Анализ...</div></div>
+    <div class="tf-badge neut" id="trendFilterBadgeSOL">ЖДЁМ</div>
+  </div>
+  <div class="price-card sol-theme">
+    <div class="pair-row"><div class="pair">SOL/USDT · BYBIT</div><div class="tf-badge-sm" id="tfBadgeSOL">1H</div></div>
+    <div class="price-row"><div class="price" id="priceSOL">--.--</div><div class="price-change" id="changeSOL">--</div></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24SOL">--</div></div>
+      <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24SOL">--</div></div>
+      <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctSOL">--</div></div>
+      <div class="stat"><div class="stat-label">ATR%</div><div class="stat-value" id="atrPctSOL">--</div></div>
+      <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundSOL">--</div></div>
     </div>
-
-    <div class="price-card sol-theme">
-      <div class="pair-row">
-        <div class="pair">SOL/USDT · BYBIT</div>
-        <div class="timeframe-badge" id="tfBadgeSOL">1H</div>
-      </div>
-      <div class="price-row">
-        <div class="price" id="priceSOL">--.--</div>
-        <div class="price-change" id="changeSOL">--</div>
-      </div>
-      <div class="stats-row">
-        <div class="stat"><div class="stat-label">MAX 24Ч</div><div class="stat-value" id="high24SOL">--</div></div>
-        <div class="stat"><div class="stat-label">MIN 24Ч</div><div class="stat-value" id="low24SOL">--</div></div>
-        <div class="stat"><div class="stat-label">ОБЪЁМ</div><div class="stat-value" id="vol24SOL">--</div></div>
-        <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctSOL">--</div></div>
-      </div>
+  </div>
+  <div class="oi-funding-row">
+    <div class="oi-box"><div class="oi-label">Open Interest</div><div class="oi-val" id="oiSOL">--</div><div class="oi-sub" id="oiChangeSOL">--</div></div>
+    <div class="oi-box"><div class="oi-label">Funding Rate</div><div class="oi-val" id="fundValSOL">--</div><div class="oi-sub" id="fundSignalSOL">--</div></div>
+    <div class="oi-box"><div class="oi-label">Свечной паттерн</div><div class="oi-val" id="patternValSOL">--</div><div class="oi-sub" id="patternSubSOL">--</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Мульти-таймфрейм · SOL</div>
+    <div class="mtf-grid">
+      <div class="mtf-cell" id="mtfSOL15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfSOL15sig">--</div><div class="mtf-rsi" id="mtfSOL15rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfSOL60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfSOL60sig">--</div><div class="mtf-rsi" id="mtfSOL60rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfSOL240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfSOL240sig">--</div><div class="mtf-rsi" id="mtfSOL240rsi">RSI --</div></div>
     </div>
-
-    <div class="mtf-card">
-      <div class="card-title">Мульти-таймфрейм · SOL</div>
-      <div class="mtf-grid">
-        <div class="mtf-cell" id="mtfSOL15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfSOL15sig">--</div><div class="mtf-rsi" id="mtfSOL15rsi">RSI --</div></div>
-        <div class="mtf-cell" id="mtfSOL60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfSOL60sig">--</div><div class="mtf-rsi" id="mtfSOL60rsi">RSI --</div></div>
-        <div class="mtf-cell" id="mtfSOL240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfSOL240sig">--</div><div class="mtf-rsi" id="mtfSOL240rsi">RSI --</div></div>
-      </div>
-      <div class="mtf-confirm" id="mtfConfirmSOL">Загрузка...</div>
+    <div class="mtf-confirm" id="mtfConfirmSOL">Загрузка...</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Индикаторы · SOL</div>
+    <div class="ind-grid">
+      <div class="ind-box"><div class="ind-box-label">RSI (14)</div><div class="ind-box-val" id="rsiSOL">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarSOL"></div></div></div><div class="ind-box-sub" id="rsiZoneSOL">--</div><div class="div-badge div-none" id="rsiDivSOL">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">MACD</div><div class="ind-box-val" id="macdSOL">--</div><div class="ind-box-sub" id="macdSubSOL">--</div><div class="div-badge div-none" id="macdDivSOL">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">EMA 20/50</div><div class="ind-box-val" id="emaSOL">--</div><div class="ind-box-sub" id="emaSubSOL">--</div><div class="div-badge div-none" id="emaCrossSOL">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">Объём vs avg20</div><div class="ind-box-val" id="volValSOL">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarSOL"></div></div></div><div class="ind-box-sub" id="volSubSOL">--</div></div>
     </div>
-
-    <div class="indicators-card">
-      <div class="card-title">Индикаторы · SOL</div>
-      <div class="ind-grid">
-        <div class="ind-box">
-          <div class="ind-box-label">RSI (14)</div>
-          <div class="ind-box-val" id="rsiSOL">--</div>
-          <div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarSOL" style="width:50%"></div></div></div>
-          <div class="ind-box-sub" id="rsiZoneSOL">--</div>
-          <div class="div-badge div-none" id="rsiDivSOL">Дивергенция: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">MACD</div>
-          <div class="ind-box-val" id="macdSOL">--</div>
-          <div class="ind-box-sub" id="macdSubSOL">--</div>
-          <div class="div-badge div-none" id="macdDivSOL">Пересечение: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">EMA 20 / 50</div>
-          <div class="ind-box-val" id="emaSOL">--</div>
-          <div class="ind-box-sub" id="emaSubSOL">--</div>
-          <div class="div-badge div-none" id="emaCrossSOL">EMA: --</div>
-        </div>
-        <div class="ind-box">
-          <div class="ind-box-label">Объём (vs avg20)</div>
-          <div class="ind-box-val" id="volValSOL">--</div>
-          <div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarSOL" style="width:50%"></div></div></div>
-          <div class="ind-box-sub" id="volSubSOL">--</div>
-        </div>
-      </div>
-      <div class="levels-row">
-        <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportSOL">--</div></div>
-        <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistSOL">--</div></div>
-      </div>
+    <div class="levels-row">
+      <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportSOL">--</div></div>
+      <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistSOL">--</div></div>
     </div>
-
-    <div class="signal-card wait" id="signalCardSOL">
-      <div class="signal-header">
-        <div class="signal-badge badge-wait" id="signalBadgeSOL">АНАЛИЗ</div>
-        <div class="sig-meta">
-          <div class="sig-score" id="sigScoreSOL">--</div>
-          <div class="sig-strength" id="sigStrengthSOL">
-            <div class="sig-dot"></div><div class="sig-dot"></div><div class="sig-dot"></div>
-            <div class="sig-dot"></div><div class="sig-dot"></div><div class="sig-dot"></div>
-          </div>
-        </div>
-      </div>
-      <div class="entry-grid">
-        <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entrySOL">--</div></div>
-        <div class="entry-box"><div class="entry-label">Стоп-лосс</div><div class="entry-val c-sl" id="slSOL">--</div></div>
-        <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1SOL">--</div></div>
-        <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2SOL">--</div></div>
-      </div>
-      <div class="rr-badge" id="rrSOL">R:R --</div>
-      <div class="reason-box" id="reasonSOL">Ожидание данных...</div>
-      <div class="vol-warning hidden" id="volWarnSOL">⚠ Низкий объём — сигнал менее надёжен</div>
-      <div class="trend-warning hidden" id="trendWarnSOL">🚫 Сигнал заблокирован фильтром тренда</div>
+  </div>
+  <div class="signal-card wait" id="signalCardSOL">
+    <div class="signal-header">
+      <div class="signal-badge badge-wait" id="signalBadgeSOL">АНАЛИЗ</div>
+      <div class="sig-meta"><div class="sig-score" id="sigScoreSOL">--</div><div class="sig-strength" id="sigStrengthSOL"></div></div>
     </div>
+    <div class="entry-grid">
+      <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entrySOL">--</div></div>
+      <div class="entry-box"><div class="entry-label">Стоп (ATR)</div><div class="entry-val c-sl" id="slSOL">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1SOL">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2SOL">--</div></div>
+    </div>
+    <div><span class="rr-badge" id="rrSOL">R:R --</span><span class="atr-badge" id="atrBadgeSOL">ATR --</span></div>
+    <div class="reason-box" id="reasonSOL">Ожидание данных...</div>
+    <div class="warn-row vol-warning hidden" id="volWarnSOL">⚠ Низкий объём</div>
+    <div class="warn-row trend-warning hidden" id="trendWarnSOL">🚫 Заблокирован</div>
+  </div>
+</div>
 
-  </div><!-- /panelSOL -->
-
-  <!-- Controls -->
+<!-- STATS PANEL -->
+<div class="asset-panel" id="panelSTAT">
+  <div class="tracker-card">
+    <div class="card-title">Трекер сигналов</div>
+    <div class="tracker-stats">
+      <div class="ts-box"><div class="ts-label">Всего</div><div class="ts-val" id="statTotal" style="color:var(--white)">0</div></div>
+      <div class="ts-box"><div class="ts-label">Побед</div><div class="ts-val" id="statWins" style="color:var(--green)">0</div></div>
+      <div class="ts-box"><div class="ts-label">Потерь</div><div class="ts-val" id="statLoss" style="color:var(--red)">0</div></div>
+      <div class="ts-box"><div class="ts-label">Winrate</div><div class="ts-val" id="statWR" style="color:var(--accent)">--%</div></div>
+    </div>
+    <div style="margin-top:10px" id="trackerList"><div style="font-size:12px;color:var(--dim);text-align:center;padding:20px">Сигналов ещё не было</div></div>
+  </div>
   <div class="controls">
-    <button class="btn btn-primary" onclick="fetchAllData()">↻ ОБНОВИТЬ</button>
-    <button class="btn btn-secondary" onclick="document.getElementById('tgSetup').classList.toggle('hidden')">⚙ TG</button>
+    <button class="btn btn-danger" onclick="clearTracker()">🗑 Очистить историю</button>
   </div>
+</div>
 
-  <!-- Log -->
-  <div class="log-card">
-    <div class="card-title">Лог событий</div>
-    <div id="logContainer">
-      <div class="log-entry"><span class="log-time">--:--</span><span class="log-info">Ожидание запуска...</span></div>
-    </div>
-  </div>
+<div class="controls">
+  <button class="btn btn-primary" onclick="fetchAllData()">↻ ОБНОВИТЬ</button>
+  <button class="btn btn-secondary" onclick="document.getElementById('tgSetup').classList.toggle('hidden')">⚙ TG</button>
+</div>
 
+<div class="log-card">
+  <div class="card-title">Лог событий</div>
+  <div id="logContainer"><div class="log-entry"><span class="log-time">--:--</span><span class="log-info">Запуск...</span></div></div>
+</div>
 </main>
 
 <script>
-// ===================== CONFIG =====================
+// ===================== STATE =====================
 let tgToken  = localStorage.getItem('tgToken')  || '';
-let tgChatId = localStorage.getItem('tgChatId') || '1336922235';
+let tgChatId = localStorage.getItem('tgChatId') || '';
 let currentTF    = '60';
 let currentAsset = 'ETH';
-let scanInterval = null, timerInterval = null;
+let scanInterval = null, timerInterval = null, expiryInterval = null;
 let secondsLeft  = 300;
-let lastSignals  = { ETH: '', BTC: '', SOL: '' };
-
-// Global market state (BTC dominance filter)
-let btcMarketState = { trend: 'neut', rsi: 50, price: 0 };
-// All assets computed data
-let allData = { ETH: {}, BTC: {}, SOL: {} };
+let lastSignals  = { ETH:'', BTC:'', SOL:'' };
+let btcMarketState = { trend:'neut', rsi:50, price:0 };
+let allData = { ETH:{}, BTC:{}, SOL:{} };
+// Signal tracker [{asset,dir,entry,sl,tp1,tp2,time,result,price_at_check}]
+let signalHistory = JSON.parse(localStorage.getItem('signalHistory') || '[]');
+// Active open signals for expiry check
+let openSignals = JSON.parse(localStorage.getItem('openSignals') || '[]');
 
 const ASSETS = [
-  { key: 'ETH', symbol: 'ETHUSDT', decimals: 2 },
-  { key: 'BTC', symbol: 'BTCUSDT', decimals: 0 },
-  { key: 'SOL', symbol: 'SOLUSDT', decimals: 2 },
+  { key:'ETH', symbol:'ETHUSDT', decimals:2 },
+  { key:'BTC', symbol:'BTCUSDT', decimals:0 },
+  { key:'SOL', symbol:'SOLUSDT', decimals:2 },
 ];
 
 document.getElementById('tgToken').value  = tgToken;
 document.getElementById('tgChatId').value = tgChatId;
-
 if (tgToken) document.getElementById('tgSetup').classList.add('hidden');
+
 startBot();
 
 function saveSettings() {
@@ -820,709 +519,818 @@ function saveSettings() {
 }
 
 function startBot() {
-  addLog('Бот v3.1 запущен (RSI-фильтр + стоп макс 2%)', 'ok');
+  addLog('Бот v4.0 — ATR·паттерны·OI·фандинг·трекер', 'ok');
   setStatus('АКТИВЕН', 'ok');
+  updateTimeFilter();
   fetchAllData();
   if (scanInterval) clearInterval(scanInterval);
   scanInterval = setInterval(fetchAllData, getIntervalSeconds(currentTF) * 1000);
   startTimer(getIntervalSeconds(currentTF));
+  // Expiry check every minute
+  if (expiryInterval) clearInterval(expiryInterval);
+  expiryInterval = setInterval(checkSignalExpiry, 60000);
+  renderTracker();
 }
 
-function getIntervalSeconds(tf) {
-  return tf === '15' ? 180 : tf === '60' ? 300 : 600;
-}
+function getIntervalSeconds(tf) { return tf==='15'?180:tf==='60'?300:600; }
 
 function switchTF(tf) {
   currentTF = tf;
-  document.querySelectorAll('.tf-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tf' + tf).classList.add('active');
-  // Update all TF badges
-  const label = tf === '15' ? '15M' : tf === '60' ? '1H' : '4H';
-  ['ETH','BTC','SOL'].forEach(a => {
-    const el = document.getElementById('tfBadge'+a);
-    if (el) el.textContent = label;
-  });
+  document.querySelectorAll('.tf-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tf'+tf).classList.add('active');
+  const label = tf==='15'?'15M':tf==='60'?'1H':'4H';
+  ['ETH','BTC','SOL'].forEach(a=>{ const el=document.getElementById('tfBadge'+a); if(el) el.textContent=label; });
   if (scanInterval) clearInterval(scanInterval);
-  const interval = getIntervalSeconds(tf);
-  scanInterval = setInterval(fetchAllData, interval * 1000);
-  startTimer(interval);
-  // Re-generate signals with new TF
-  ['ETH','BTC','SOL'].forEach(a => {
-    if (allData[a] && allData[a][tf]) {
-      const d = allData[a][tf];
-      const bulls = countTrend(allData[a], 'bull');
-      const bears = countTrend(allData[a], 'bear');
-      updateIndicatorsUI(a, d);
-      generateSignal(a, d, bulls, bears);
-    }
-  });
+  const iv = getIntervalSeconds(tf);
+  scanInterval = setInterval(fetchAllData, iv*1000);
+  startTimer(iv);
+  ['ETH','BTC','SOL'].forEach(a=>{ if(allData[a]&&allData[a][tf]){ const d=allData[a][tf]; updateIndicatorsUI(a,d); generateSignal(a,d,countTrend(allData[a],'bull'),countTrend(allData[a],'bear')); }});
 }
 
 function switchAsset(asset) {
   currentAsset = asset;
-  ['ETH','BTC','SOL'].forEach(a => {
-    document.getElementById('assetTab'+a).className = 'asset-tab' + (a === asset ? ' active '+ a.toLowerCase()+'-active' : '');
-    document.getElementById('panel'+a).className = 'asset-panel' + (a === asset ? ' visible' : '');
+  ['ETH','BTC','SOL','STAT'].forEach(a=>{
+    const tab = document.getElementById('assetTab'+a);
+    if (tab) tab.className = 'asset-tab' + (a===asset ? ' active '+a.toLowerCase()+'-active' : '');
+    const panel = document.getElementById('panel'+a);
+    if (panel) panel.className = 'asset-panel' + (a===asset?' visible':'');
   });
 }
 
-function startTimer(total = 300) {
-  secondsLeft = total;
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    secondsLeft = Math.max(0, secondsLeft - 1);
-    const pct = (secondsLeft / total) * 100;
-    const fill = document.getElementById('timerFill');
-    if (fill) fill.style.width = pct + '%';
-    const m = Math.floor(secondsLeft / 60), s = secondsLeft % 60;
-    const ns = document.getElementById('nextScan');
-    if (ns) ns.textContent = `Следующий скан: ${m}:${s.toString().padStart(2,'0')}`;
-    if (secondsLeft <= 0) secondsLeft = total;
-  }, 1000);
+function startTimer(total=300) {
+  secondsLeft=total;
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    secondsLeft=Math.max(0,secondsLeft-1);
+    const fill=document.getElementById('timerFill');
+    if(fill) fill.style.width=(secondsLeft/total*100)+'%';
+    const m=Math.floor(secondsLeft/60),s=secondsLeft%60;
+    const ns=document.getElementById('nextScan');
+    if(ns) ns.textContent=`Следующий скан: ${m}:${s.toString().padStart(2,'0')}`;
+    if(secondsLeft<=0) secondsLeft=total;
+  },1000);
 }
 
-function setStatus(text, type) {
-  document.getElementById('statusText').textContent = text;
-  const dot = document.getElementById('statusDot');
-  dot.className = 'dot' + (type === 'ok' ? '' : type === 'warn' ? ' warn' : ' err');
+function setStatus(text,type) {
+  document.getElementById('statusText').textContent=text;
+  const dot=document.getElementById('statusDot');
+  dot.className='dot'+(type==='ok'?'':type==='warn'?' warn':' err');
+}
+
+// ===================== TIME FILTER =====================
+function updateTimeFilter() {
+  const utcH = new Date().getUTCHours();
+  // Низкая активность: 00:00–06:00 UTC (азиатская ночь)
+  const isLowTime = utcH >= 0 && utcH < 6;
+  const row = document.getElementById('timeFilterRow');
+  const txt = document.getElementById('timeFilterText');
+  if (isLowTime) {
+    row.className = 'time-filter-row warn';
+    txt.textContent = `🌙 Низкая активность (UTC ${utcH}:xx) — сигналы ослаблены`;
+  } else {
+    row.className = 'time-filter-row ok';
+    txt.textContent = `✅ Активное время торговли (UTC ${utcH}:xx)`;
+  }
+  return isLowTime;
 }
 
 // ===================== FETCH =====================
 async function fetchAllData() {
-  setStatus('СКАНИРУЮ', 'warn');
+  setStatus('СКАНИРУЮ','warn');
   startTimer(getIntervalSeconds(currentTF));
+  updateTimeFilter();
   try {
-    await Promise.all(ASSETS.map(a => fetchAsset(a)));
-    setStatus('АКТИВЕН', 'ok');
+    await Promise.all(ASSETS.map(a=>fetchAsset(a)));
+    setStatus('АКТИВЕН','ok');
     updateBTCContext();
   } catch(e) {
-    setStatus('ОШИБКА', 'err');
-    addLog('Ошибка: ' + e.message, 'warn');
+    setStatus('ОШИБКА','err');
+    addLog('Ошибка: '+e.message,'warn');
   }
 }
 
 async function fetchAsset(asset) {
-  const { key, symbol, decimals } = asset;
-  // Fetch ticker
-  const tickerRes = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${symbol}`);
-  const tickerData = await tickerRes.json();
-  const t = tickerData.result.list[0];
+  const {key,symbol,decimals} = asset;
+
+  // Ticker
+  const tr = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${symbol}`);
+  const td = await tr.json();
+  const t  = td.result.list[0];
   const price = parseFloat(t.lastPrice);
-  const change = parseFloat(t.price24hPcnt) * 100;
+  const change = parseFloat(t.price24hPcnt)*100;
 
-  // Update price UI
-  document.getElementById('price'+key).textContent = decimals === 0 ? Math.round(price).toLocaleString() : price.toFixed(decimals);
+  document.getElementById('price'+key).textContent = decimals===0 ? Math.round(price).toLocaleString() : price.toFixed(decimals);
   const cel = document.getElementById('change'+key);
-  cel.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-  cel.className = 'price-change ' + (change >= 0 ? 'positive' : 'negative');
-  document.getElementById('high24'+key).textContent = parseFloat(t.highPrice24h).toFixed(decimals === 0 ? 0 : 0);
-  document.getElementById('low24'+key).textContent  = parseFloat(t.lowPrice24h).toFixed(decimals === 0 ? 0 : 0);
-  document.getElementById('vol24'+key).textContent  = (parseFloat(t.volume24h) / 1e6).toFixed(1) + 'M';
+  cel.textContent = (change>=0?'+':'')+change.toFixed(2)+'%';
+  cel.className = 'price-change '+(change>=0?'positive':'negative');
+  document.getElementById('high24'+key).textContent = parseFloat(t.highPrice24h).toFixed(0);
+  document.getElementById('low24'+key).textContent  = parseFloat(t.lowPrice24h).toFixed(0);
 
-  // Fetch all TFs
-  const tfs = ['15', '60', '240'];
-  const klineResults = await Promise.all(tfs.map(tf => fetchKlines(symbol, tf)));
+  // Klines for 3 TFs
+  const tfs = ['15','60','240'];
+  const klineResults = await Promise.all(tfs.map(tf=>fetchKlines(symbol,tf)));
+
+  // OI + Funding (parallel)
+  const [oiData, fundData] = await Promise.all([
+    fetchOI(symbol),
+    fetchFunding(symbol)
+  ]);
 
   allData[key] = {};
-  tfs.forEach((tf, i) => {
-    const klines = klineResults[i];
-    const closes  = klines.map(k => parseFloat(k[4]));
-    const volumes = klines.map(k => parseFloat(k[5]));
-    const highs   = klines.map(k => parseFloat(k[2]));
-    const lows    = klines.map(k => parseFloat(k[3]));
+  tfs.forEach((tf,i)=>{
+    const klines  = klineResults[i];
+    const closes  = klines.map(k=>parseFloat(k[4]));
+    const volumes = klines.map(k=>parseFloat(k[5]));
+    const highs   = klines.map(k=>parseFloat(k[2]));
+    const lows    = klines.map(k=>parseFloat(k[3]));
+    const opens   = klines.map(k=>parseFloat(k[1]));
 
-    const rsi     = calcRSIWilder(closes, 14);
-    const ema20   = calcEMA(closes, 20);
-    const ema50   = calcEMA(closes, 50);
-    const ema200  = calcEMA(closes, Math.min(100, closes.length - 1)); // proxy for 200 using available data
-    const macd    = calcMACD(closes);
+    const rsi      = calcRSIWilder(closes,14);
+    const ema20    = calcEMA(closes,20);
+    const ema50    = calcEMA(closes,50);
+    const macd     = calcMACD(closes);
+    const atr      = calcATR(highs,lows,closes,14);
     const volRatio = calcVolRatio(volumes);
     const support  = calcSupportCluster(lows);
     const resist   = calcResistCluster(highs);
-    const div      = detectRSIDivergence(closes, rsi, 14);
+    const div      = detectRSIDivergence(closes,rsi,14);
+    const pattern  = detectCandlePattern(opens,highs,lows,closes);
 
-    allData[key][tf] = { rsi, ema20, ema50, ema200, macd, price: closes[closes.length - 1], closes, volumes, volRatio, support, resist, div, highs, lows };
+    allData[key][tf] = { rsi,ema20,ema50,macd,atr,price:closes[closes.length-1],closes,volumes,volRatio,support,resist,div,pattern,highs,lows,opens };
   });
 
+  // Attach OI+funding to all TF data
+  ['15','60','240'].forEach(tf=>{ allData[key][tf].oi=oiData; allData[key][tf].funding=fundData; });
+
   // Update MTF cells
-  tfs.forEach(tf => {
+  tfs.forEach(tf=>{
     const d = allData[key][tf];
-    const trend = getTrend(d.price, d.ema20, d.ema50, d.rsi, d.macd);
+    const trend = getTrend(d.price,d.ema20,d.ema50,d.rsi,d.macd);
     const cell  = document.getElementById('mtf'+key+tf);
     const sigEl = document.getElementById('mtf'+key+tf+'sig');
     const rsiEl = document.getElementById('mtf'+key+tf+'rsi');
-    if (!cell) return;
-    cell.className  = 'mtf-cell ' + trend.cls;
-    sigEl.className = 'mtf-sig ' + trend.cls;
+    if(!cell) return;
+    cell.className = 'mtf-cell '+trend.cls;
+    sigEl.className = 'mtf-sig '+trend.cls;
     sigEl.textContent = trend.label;
-    rsiEl.textContent = 'RSI ' + d.rsi.toFixed(1);
+    rsiEl.textContent = 'RSI '+d.rsi.toFixed(1);
   });
 
-  // MTF confirm
-  const bulls = countTrend(allData[key], 'bull');
-  const bears = countTrend(allData[key], 'bear');
-  let confirm = '';
-  if (bulls === 3) confirm = '✅ Все 3 ТФ бычьи — сильный ЛОНГ';
-  else if (bears === 3) confirm = '✅ Все 3 ТФ медвежьих — сильный ШОРТ';
-  else if (bulls === 2) confirm = '⚡ 2/3 ТФ бычьих — умеренный ЛОНГ';
-  else if (bears === 2) confirm = '⚡ 2/3 ТФ медвежьих — умеренный ШОРТ';
-  else confirm = '◈ ТФ в разнобой — ждём подтверждения';
+  const bulls = countTrend(allData[key],'bull');
+  const bears = countTrend(allData[key],'bear');
+  let confirm='';
+  if(bulls===3) confirm='✅ Все 3 ТФ бычьи — сильный ЛОНГ';
+  else if(bears===3) confirm='✅ Все 3 ТФ медвежьих — сильный ШОРТ';
+  else if(bulls===2) confirm='⚡ 2/3 ТФ бычьих — умеренный ЛОНГ';
+  else if(bears===2) confirm='⚡ 2/3 ТФ медвежьих — умеренный ШОРТ';
+  else confirm='◈ ТФ в разнобой — ждём подтверждения';
   document.getElementById('mtfConfirm'+key).textContent = confirm;
 
-  // Update BTC state for market context
-  if (key === 'BTC') {
+  // Update BTC state
+  if(key==='BTC') {
     const d4h = allData.BTC['240'];
     const d1h = allData.BTC['60'];
-    const trendH = getTrend(d4h.price, d4h.ema20, d4h.ema50, d4h.rsi, d4h.macd);
-    btcMarketState = { trend: trendH.raw, rsi: d1h.rsi, price: d4h.price };
+    const tr4h = getTrend(d4h.price,d4h.ema20,d4h.ema50,d4h.rsi,d4h.macd);
+    btcMarketState = { trend:tr4h.raw, rsi:d1h.rsi, price:d4h.price };
   }
 
-  // Update active TF indicators and signal
+  // OI UI
+  updateOIUI(key, oiData, fundData, allData[key][currentTF]?.pattern || {name:'--',dir:'none'});
+
+  // ATR % UI
   const d = allData[key][currentTF];
-  if (d) {
-    updateIndicatorsUI(key, d);
-    generateSignal(key, d, bulls, bears);
+  if(d) {
+    const atrPct = (d.atr/price*100).toFixed(2);
+    const ap = document.getElementById('atrPct'+key);
+    if(ap) { ap.textContent=atrPct+'%'; ap.style.color=parseFloat(atrPct)>3?'var(--red)':parseFloat(atrPct)<1?'var(--green)':'var(--text)'; }
+    // Fund badge in stats row
+    const fb = document.getElementById('fund'+key);
+    if(fb) { fb.textContent=(fundData.rate*100).toFixed(4)+'%'; fb.style.color=Math.abs(fundData.rate)>0.001?'var(--red)':'var(--text)'; }
+    // Vol%
+    const vp = document.getElementById('volPct'+key);
+    if(vp) { vp.textContent=(d.volRatio*100).toFixed(0)+'%'; vp.style.color=d.volRatio>1.5?'var(--green)':d.volRatio<0.7?'var(--red)':'var(--text)'; }
+
+    updateIndicatorsUI(key,d);
+    generateSignal(key,d,bulls,bears);
   }
 
-  // Vol% badge
-  const vp = document.getElementById('volPct'+key);
-  if (vp && allData[key][currentTF]) {
-    const vr = allData[key][currentTF].volRatio;
-    vp.textContent = (vr * 100).toFixed(0) + '%';
-    vp.style.color = vr > 1.5 ? 'var(--green)' : vr < 0.7 ? 'var(--red)' : 'var(--text)';
-  }
+  // Check open signals for this asset
+  checkSignalResults(key, price);
 
-  addLog(`${key} $${price.toFixed(decimals)} | RSI ${allData[key][currentTF]?.rsi?.toFixed(1) || '--'}`, 'ok');
+  addLog(`${key} $${price.toFixed(decimals)} RSI:${allData[key][currentTF]?.rsi?.toFixed(1)||'--'}`, 'ok');
 }
 
-async function fetchKlines(symbol, interval, limit = 120) {
-  const res = await fetch(`https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}&interval=${interval}&limit=${limit}`);
-  const data = await res.json();
-  return data.result.list.reverse();
+async function fetchKlines(symbol,interval,limit=120) {
+  const r = await fetch(`https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}&interval=${interval}&limit=${limit}`);
+  const d = await r.json();
+  return d.result.list.reverse();
+}
+
+async function fetchOI(symbol) {
+  try {
+    const r = await fetch(`https://api.bybit.com/v5/market/open-interest?category=linear&symbol=${symbol}&intervalTime=1h&limit=2`);
+    const d = await r.json();
+    const list = d.result.list;
+    if(!list||list.length<2) return {current:0,prev:0,change:0};
+    const current = parseFloat(list[0].openInterest);
+    const prev    = parseFloat(list[1].openInterest);
+    return { current, prev, change: (current-prev)/prev*100 };
+  } catch { return {current:0,prev:0,change:0}; }
+}
+
+async function fetchFunding(symbol) {
+  try {
+    const r = await fetch(`https://api.bybit.com/v5/market/funding/history?category=linear&symbol=${symbol}&limit=1`);
+    const d = await r.json();
+    const rate = parseFloat(d.result.list[0]?.fundingRate||0);
+    return { rate };
+  } catch { return {rate:0}; }
+}
+
+function updateOIUI(key, oi, fund, pattern) {
+  const oiEl     = document.getElementById('oi'+key);
+  const oiChEl   = document.getElementById('oiChange'+key);
+  const fundEl   = document.getElementById('fundVal'+key);
+  const fundSig  = document.getElementById('fundSignal'+key);
+  const patEl    = document.getElementById('patternVal'+key);
+  const patSub   = document.getElementById('patternSub'+key);
+  if(!oiEl) return;
+
+  // OI
+  if(oi.current>0) {
+    oiEl.textContent = (oi.current/1e6).toFixed(1)+'M';
+    const chSign = oi.change>=0?'+':'';
+    oiChEl.textContent = chSign+oi.change.toFixed(2)+'% 1h';
+    oiChEl.style.color = oi.change>1?'var(--green)':oi.change<-1?'var(--red)':'var(--text2)';
+  }
+
+  // Funding
+  const fr = (fund.rate*100).toFixed(4);
+  fundEl.textContent = fr+'%';
+  fundEl.style.color = Math.abs(fund.rate)>0.001?'var(--red)':'var(--green)';
+  if(fund.rate>0.001) { fundSig.textContent='Лонги перегреты'; fundSig.style.color='var(--red)'; }
+  else if(fund.rate<-0.001) { fundSig.textContent='Шорты перегреты'; fundSig.style.color='var(--green)'; }
+  else { fundSig.textContent='Нейтрально'; fundSig.style.color='var(--text2)'; }
+
+  // Pattern
+  if(pattern&&pattern.name!=='--') {
+    patEl.textContent  = pattern.name;
+    patEl.style.color  = pattern.dir==='bull'?'var(--green)':pattern.dir==='bear'?'var(--red)':'var(--text2)';
+    patSub.textContent = pattern.dir==='bull'?'▲ бычий':'▼ медвежий';
+    patSub.style.color = pattern.dir==='bull'?'var(--green)':'var(--red)';
+  } else {
+    patEl.textContent  = '—';
+    patEl.style.color  = 'var(--dim)';
+    patSub.textContent = 'нет паттерна';
+    patSub.style.color = 'var(--dim)';
+  }
 }
 
 function countTrend(assetData, type) {
-  const tfs = ['15', '60', '240'];
-  return tfs.filter(tf => {
-    if (!assetData[tf]) return false;
-    const d = assetData[tf];
-    return getTrend(d.price, d.ema20, d.ema50, d.rsi, d.macd).raw === type;
-  }).length;
-}
-
-// ===================== TREND FILTER =====================
-// Determines if we should allow LONG or SHORT based on higher TF structure
-// Rules:
-//   LONG allowed  → 4H trend is BULL (price > EMA50 on 4H)
-//   SHORT allowed → 4H trend is BEAR (price < EMA50 on 4H)
-//   If market is neutral — signals allowed but with warning
-//   For ETH/SOL: BTC 4H trend must agree (or neutral) to allow signal
-
-function computeTrendFilter(assetKey) {
-  const data4h = allData[assetKey] && allData[assetKey]['240'];
-  const data1h = allData[assetKey] && allData[assetKey]['60'];
-  if (!data4h || !data1h) return { longOk: false, shortOk: false, label: 'Нет данных', sub: '--', cls: 'neut', badgeText: 'ЖДЁМ' };
-
-  const trend4h = getTrend(data4h.price, data4h.ema20, data4h.ema50, data4h.rsi, data4h.macd);
-  const trend1h = getTrend(data1h.price, data1h.ema20, data1h.ema50, data1h.rsi, data1h.macd);
-
-  let longOk  = false;
-  let shortOk = false;
-  let label   = '';
-  let sub     = '';
-  let cls     = 'neut';
-  let badgeText = '';
-
-  // Primary filter: 4H structure
-  if (trend4h.raw === 'bull') {
-    longOk    = true;
-    shortOk   = false;
-    label     = '4H тренд: БЫЧИЙ';
-    sub       = `EMA50: ${data4h.ema50.toFixed(0)} | Цена > EMA — разрешён ЛОНГ`;
-    cls       = 'bull';
-    badgeText = '▲ ЛОНГ';
-  } else if (trend4h.raw === 'bear') {
-    longOk    = false;
-    shortOk   = true;
-    label     = '4H тренд: МЕДВЕЖИЙ';
-    sub       = `EMA50: ${data4h.ema50.toFixed(0)} | Цена < EMA — разрешён ШОРТ`;
-    cls       = 'bear';
-    badgeText = '▼ ШОРТ';
-  } else {
-    longOk    = true; // neutral — allow both but weaker
-    shortOk   = true;
-    label     = '4H тренд: НЕЙТРАЛЬНЫЙ';
-    sub       = `EMA50: ${data4h.ema50.toFixed(0)} | Смешанный сигнал — осторожно`;
-    cls       = 'neut';
-    badgeText = '◈ НЕЙТРАЛ';
-  }
-
-  // Secondary filter for ETH/SOL: BTC must agree
-  if (assetKey !== 'BTC' && btcMarketState.trend !== 'neut') {
-    if (btcMarketState.trend === 'bear' && longOk) {
-      // BTC медвежий, пытаемся лонговать альт — блокируем
-      longOk  = false;
-      label   = '⛔ BTC медвежий — лонг заблокирован';
-      sub     = `BTC тренд (4H) против лонга по ${assetKey}`;
-      cls     = 'blocked';
-      badgeText = '⛔ БЛОК';
-    } else if (btcMarketState.trend === 'bull' && shortOk && trend4h.raw !== 'bear') {
-      // BTC бычий, пытаемся шортить альт при нейтральном 4H — блокируем
-      shortOk  = false;
-      label    = '⛔ BTC бычий — шорт под вопросом';
-      sub      = `BTC тренд против шорта по ${assetKey}`;
-      cls      = 'blocked';
-      badgeText = '⛔ ОСТОРОЖНО';
-    }
-  }
-
-  return { longOk, shortOk, label, sub, cls, badgeText };
-}
-
-function updateTrendFilterUI(assetKey, filter) {
-  const card  = document.getElementById('trendFilter' + assetKey);
-  const title = document.getElementById('trendFilterTitle' + assetKey);
-  const sub   = document.getElementById('trendFilterSub'   + assetKey);
-  const badge = document.getElementById('trendFilterBadge' + assetKey);
-  if (!card) return;
-  card.className  = 'trend-filter-card ' + filter.cls;
-  title.textContent = filter.label;
-  sub.textContent   = filter.sub;
-  badge.className   = 'tf-badge ' + (filter.cls === 'blocked' ? 'bear' : filter.cls);
-  badge.textContent = filter.badgeText;
-}
-
-function updateBTCContext() {
-  ['ETH', 'SOL'].forEach(key => {
-    const ctx = document.getElementById('btcContext' + key);
-    if (!ctx) return;
-    const trendEl = document.getElementById('btcCtxTrend' + key);
-    const priceEl = document.getElementById('btcCtxPrice' + key);
-    const rsiEl   = document.getElementById('btcCtxRsi'   + key);
-    const trendText = btcMarketState.trend === 'bull' ? '▲ BTC бычий' : btcMarketState.trend === 'bear' ? '▼ BTC медвежий' : '◈ BTC нейтрал';
-    trendEl.textContent = trendText;
-    trendEl.style.color = btcMarketState.trend === 'bull' ? 'var(--green)' : btcMarketState.trend === 'bear' ? 'var(--red)' : 'var(--yellow)';
-    priceEl.textContent = '$' + Math.round(btcMarketState.price).toLocaleString();
-    rsiEl.textContent   = 'RSI ' + btcMarketState.rsi.toFixed(1);
-  });
+  return ['15','60','240'].filter(tf=>{ if(!assetData[tf]) return false; const d=assetData[tf]; return getTrend(d.price,d.ema20,d.ema50,d.rsi,d.macd).raw===type; }).length;
 }
 
 // ===================== INDICATORS =====================
-function calcRSIWilder(closes, period) {
-  if (closes.length < period + 1) return 50;
-  let gains = 0, losses = 0;
-  for (let i = 1; i <= period; i++) {
-    const d = closes[i] - closes[i - 1];
-    if (d > 0) gains += d; else losses -= d;
-  }
-  let avgGain = gains / period;
-  let avgLoss = losses / period;
-  for (let i = period + 1; i < closes.length; i++) {
-    const d = closes[i] - closes[i - 1];
-    avgGain = (avgGain * (period - 1) + (d > 0 ? d : 0)) / period;
-    avgLoss = (avgLoss * (period - 1) + (d < 0 ? -d : 0)) / period;
-  }
-  if (avgLoss === 0) return 100;
-  return 100 - 100 / (1 + avgGain / avgLoss);
+function calcRSIWilder(closes,period) {
+  if(closes.length<period+1) return 50;
+  let gains=0,losses=0;
+  for(let i=1;i<=period;i++){const d=closes[i]-closes[i-1];if(d>0)gains+=d;else losses-=d;}
+  let ag=gains/period,al=losses/period;
+  for(let i=period+1;i<closes.length;i++){const d=closes[i]-closes[i-1];ag=(ag*(period-1)+(d>0?d:0))/period;al=(al*(period-1)+(d<0?-d:0))/period;}
+  if(al===0) return 100;
+  return 100-100/(1+ag/al);
 }
 
-function calcEMA(closes, period) {
-  if (closes.length < period) return closes[closes.length - 1] || 0;
-  const k = 2 / (period + 1);
-  let ema = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
-  for (let i = period; i < closes.length; i++) ema = closes[i] * k + ema * (1 - k);
+function calcEMA(closes,period) {
+  if(closes.length<period) return closes[closes.length-1]||0;
+  const k=2/(period+1);
+  let ema=closes.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  for(let i=period;i<closes.length;i++) ema=closes[i]*k+ema*(1-k);
   return ema;
 }
 
-function calcEMAArr(closes, period) {
-  if (closes.length < period) return [closes[closes.length - 1] || 0];
-  const k = 2 / (period + 1);
-  const result = [];
-  let ema = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
-  result.push(ema);
-  for (let i = period; i < closes.length; i++) { ema = closes[i] * k + ema * (1 - k); result.push(ema); }
-  return result;
+function calcEMAArr(closes,period) {
+  if(closes.length<period) return [closes[closes.length-1]||0];
+  const k=2/(period+1);
+  const r=[];
+  let ema=closes.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  r.push(ema);
+  for(let i=period;i<closes.length;i++){ema=closes[i]*k+ema*(1-k);r.push(ema);}
+  return r;
 }
 
 function calcMACD(closes) {
-  if (closes.length < 35) return { macd: 0, signal: 0, hist: 0, cross: 'none' };
-  const ema12arr = calcEMAArr(closes, 12);
-  const ema26arr = calcEMAArr(closes, 26);
-  const minLen = Math.min(ema12arr.length, ema26arr.length);
-  const macdLine = [];
-  for (let i = 0; i < minLen; i++) macdLine.push(ema12arr[ema12arr.length - minLen + i] - ema26arr[ema26arr.length - minLen + i]);
-  const signalArr = calcEMAArr(macdLine, 9);
-  const macdVal = macdLine[macdLine.length - 1];
-  const sigVal  = signalArr[signalArr.length - 1];
-  const hist = macdVal - sigVal;
-  let cross = 'none';
-  if (macdLine.length > 1 && signalArr.length > 1) {
-    const pm = macdLine[macdLine.length - 2], ps = signalArr[signalArr.length - 2];
-    if (pm < ps && macdVal > sigVal) cross = 'bull';
-    if (pm > ps && macdVal < sigVal) cross = 'bear';
+  if(closes.length<35) return {macd:0,signal:0,hist:0,cross:'none'};
+  const e12=calcEMAArr(closes,12),e26=calcEMAArr(closes,26);
+  const ml=Math.min(e12.length,e26.length),ml2=[];
+  for(let i=0;i<ml;i++) ml2.push(e12[e12.length-ml+i]-e26[e26.length-ml+i]);
+  const sa=calcEMAArr(ml2,9);
+  const mv=ml2[ml2.length-1],sv=sa[sa.length-1],hist=mv-sv;
+  let cross='none';
+  if(ml2.length>1&&sa.length>1){const pm=ml2[ml2.length-2],ps=sa[sa.length-2];if(pm<ps&&mv>sv)cross='bull';if(pm>ps&&mv<sv)cross='bear';}
+  return {macd:mv,signal:sv,hist,cross};
+}
+
+// ATR — Average True Range (Wilder)
+function calcATR(highs,lows,closes,period=14) {
+  if(highs.length<period+1) return closes[closes.length-1]*0.02;
+  const trs=[];
+  for(let i=1;i<highs.length;i++){
+    const hl=highs[i]-lows[i];
+    const hc=Math.abs(highs[i]-closes[i-1]);
+    const lc=Math.abs(lows[i]-closes[i-1]);
+    trs.push(Math.max(hl,hc,lc));
   }
-  return { macd: macdVal, signal: sigVal, hist, cross };
+  let atr=trs.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  for(let i=period;i<trs.length;i++) atr=(atr*(period-1)+trs[i])/period;
+  return atr;
 }
 
 function calcVolRatio(volumes) {
-  if (volumes.length < 21) return 1;
-  const avg = volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20;
-  return avg > 0 ? volumes[volumes.length - 1] / avg : 1;
+  if(volumes.length<21) return 1;
+  const avg=volumes.slice(-21,-1).reduce((a,b)=>a+b,0)/20;
+  return avg>0?volumes[volumes.length-1]/avg:1;
 }
 
 function calcSupportCluster(lows) {
-  const sorted = [...lows].sort((a, b) => a - b);
-  return sorted[Math.floor(sorted.length * 0.1)];
+  const s=[...lows].sort((a,b)=>a-b);
+  return s[Math.floor(s.length*0.1)];
 }
 function calcResistCluster(highs) {
-  const sorted = [...highs].sort((a, b) => a - b);
-  return sorted[Math.floor(sorted.length * 0.9)];
+  const s=[...highs].sort((a,b)=>a-b);
+  return s[Math.floor(s.length*0.9)];
 }
 
-function detectRSIDivergence(closes, currentRSI, period) {
-  if (closes.length < 30) return 'none';
-  const window = closes.slice(-20);
-  const minPrice = Math.min(...window);
-  const maxPrice = Math.max(...window);
-  const prevRSI = calcRSIWilder(closes.slice(0, -5), period);
-  if (closes[closes.length - 1] <= minPrice * 1.002 && currentRSI > prevRSI + 3) return 'bull';
-  if (closes[closes.length - 1] >= maxPrice * 0.998 && currentRSI < prevRSI - 3) return 'bear';
+function detectRSIDivergence(closes,currentRSI,period) {
+  if(closes.length<30) return 'none';
+  const w=closes.slice(-20);
+  const minP=Math.min(...w),maxP=Math.max(...w);
+  const prevRSI=calcRSIWilder(closes.slice(0,-5),period);
+  if(closes[closes.length-1]<=minP*1.002&&currentRSI>prevRSI+3) return 'bull';
+  if(closes[closes.length-1]>=maxP*0.998&&currentRSI<prevRSI-3) return 'bear';
   return 'none';
 }
 
-function getTrend(price, ema20, ema50, rsi, macd) {
-  let score = 0;
-  if (price > ema20) score++;
-  if (ema20 > ema50) score++;
-  if (rsi > 55) score++;
-  if (rsi < 45) score--;
-  if (macd.hist > 0) score++;
-  if (macd.hist < 0) score--;
-  if (score >= 2)  return { raw: 'bull', cls: 'bull', label: '▲ БЫЧИЙ' };
-  if (score <= -1) return { raw: 'bear', cls: 'bear', label: '▼ МЕДВЕЖИЙ' };
-  return { raw: 'neut', cls: 'neut', label: '◈ НЕЙТРАЛ' };
+// Candle pattern detection on last 3 candles
+function detectCandlePattern(opens,highs,lows,closes) {
+  const n=closes.length;
+  if(n<3) return {name:'--',dir:'none'};
+  const o=opens[n-1],h=highs[n-1],l=lows[n-1],c=closes[n-1];
+  const body=Math.abs(c-o),range=h-l;
+  const po=opens[n-2],pc=closes[n-2];
+  const ppo=opens[n-3],ppc=closes[n-3];
+
+  // Hammer (бычий): маленькое тело сверху, длинный нижний хвост
+  const lowerWick = Math.min(o,c)-l;
+  const upperWick = h-Math.max(o,c);
+  if(body>0&&lowerWick>body*2&&upperWick<body*0.5&&c>o)
+    return {name:'🔨 Молот',dir:'bull'};
+
+  // Shooting Star (медвежий): маленькое тело снизу, длинный верхний хвост
+  if(body>0&&upperWick>body*2&&lowerWick<body*0.5&&c<o)
+    return {name:'⭐ Звезда',dir:'bear'};
+
+  // Bullish Engulfing — текущая бычья свеча поглощает предыдущую медвежью
+  if(c>o&&pc<po&&c>po&&o<pc)
+    return {name:'📈 Поглощение',dir:'bull'};
+
+  // Bearish Engulfing
+  if(c<o&&pc>po&&c<po&&o>pc)
+    return {name:'📉 Поглощение',dir:'bear'};
+
+  // Doji — тело < 10% range
+  if(range>0&&body/range<0.1)
+    return {name:'⚖ Доджи',dir:'neut'};
+
+  // Morning Star (3-свечной бычий разворот)
+  if(ppc<ppo&&Math.abs(pc-po)/Math.max(0.0001,(highs[n-2]-lows[n-2]))<0.3&&c>o&&c>(ppo+ppc)/2)
+    return {name:'🌅 Утр.звезда',dir:'bull'};
+
+  // Evening Star
+  if(ppc>ppo&&Math.abs(pc-po)/Math.max(0.0001,(highs[n-2]-lows[n-2]))<0.3&&c<o&&c<(ppo+ppc)/2)
+    return {name:'🌆 Веч.звезда',dir:'bear'};
+
+  return {name:'—',dir:'none'};
+}
+
+function getTrend(price,ema20,ema50,rsi,macd) {
+  let s=0;
+  if(price>ema20) s++;
+  if(ema20>ema50) s++;
+  if(rsi>55) s++;
+  if(rsi<45) s--;
+  if(macd.hist>0) s++;
+  if(macd.hist<0) s--;
+  if(s>=2) return {raw:'bull',cls:'bull',label:'▲ БЫЧИЙ'};
+  if(s<=-1) return {raw:'bear',cls:'bear',label:'▼ МЕДВЕЖИЙ'};
+  return {raw:'neut',cls:'neut',label:'◈ НЕЙТРАЛ'};
+}
+
+// ===================== TREND FILTER =====================
+function computeTrendFilter(assetKey) {
+  const d4h=allData[assetKey]&&allData[assetKey]['240'];
+  const d1h=allData[assetKey]&&allData[assetKey]['60'];
+  if(!d4h||!d1h) return {longOk:false,shortOk:false,label:'Нет данных',sub:'--',cls:'neut',badgeText:'ЖДЁМ'};
+
+  const t4h=getTrend(d4h.price,d4h.ema20,d4h.ema50,d4h.rsi,d4h.macd);
+  let longOk=false,shortOk=false,label='',sub='',cls='neut',badgeText='';
+
+  if(t4h.raw==='bull'){longOk=true;label='4H тренд: БЫЧИЙ';sub=`EMA50: ${d4h.ema50.toFixed(0)} | Разрешён ЛОНГ`;cls='bull';badgeText='▲ ЛОНГ';}
+  else if(t4h.raw==='bear'){shortOk=true;label='4H тренд: МЕДВЕЖИЙ';sub=`EMA50: ${d4h.ema50.toFixed(0)} | Разрешён ШОРТ`;cls='bear';badgeText='▼ ШОРТ';}
+  else{longOk=true;shortOk=true;label='4H тренд: НЕЙТРАЛЬНЫЙ';sub=`EMA50: ${d4h.ema50.toFixed(0)} | Осторожно`;cls='neut';badgeText='◈ НЕЙТРАЛ';}
+
+  // BTC secondary filter
+  if(assetKey!=='BTC'&&btcMarketState.trend!=='neut'){
+    if(btcMarketState.trend==='bear'&&longOk){longOk=false;label='⛔ BTC медвежий — лонг заблокирован';sub=`BTC против лонга по ${assetKey}`;cls='blocked';badgeText='⛔ БЛОК';}
+    else if(btcMarketState.trend==='bull'&&shortOk&&t4h.raw!=='bear'){shortOk=false;label='⛔ BTC бычий — шорт под вопросом';sub=`BTC против шорта по ${assetKey}`;cls='blocked';badgeText='⛔ ОСТОРОЖНО';}
+  }
+  return {longOk,shortOk,label,sub,cls,badgeText};
+}
+
+function updateTrendFilterUI(assetKey,filter) {
+  const card=document.getElementById('trendFilter'+assetKey);
+  const title=document.getElementById('trendFilterTitle'+assetKey);
+  const sub=document.getElementById('trendFilterSub'+assetKey);
+  const badge=document.getElementById('trendFilterBadge'+assetKey);
+  if(!card) return;
+  card.className='trend-filter-card '+filter.cls;
+  title.textContent=filter.label;
+  sub.textContent=filter.sub;
+  badge.className='tf-badge '+(filter.cls==='blocked'?'bear':filter.cls);
+  badge.textContent=filter.badgeText;
+}
+
+function updateBTCContext() {
+  ['ETH','SOL'].forEach(key=>{
+    const tEl=document.getElementById('btcCtxTrend'+key);
+    const pEl=document.getElementById('btcCtxPrice'+key);
+    const rEl=document.getElementById('btcCtxRsi'+key);
+    if(!tEl) return;
+    const txt=btcMarketState.trend==='bull'?'▲ BTC бычий':btcMarketState.trend==='bear'?'▼ BTC медвежий':'◈ BTC нейтрал';
+    tEl.textContent=txt;
+    tEl.style.color=btcMarketState.trend==='bull'?'var(--green)':btcMarketState.trend==='bear'?'var(--red)':'var(--yellow)';
+    pEl.textContent='$'+Math.round(btcMarketState.price).toLocaleString();
+    rEl.textContent='RSI '+btcMarketState.rsi.toFixed(1);
+  });
 }
 
 // ===================== UI UPDATE =====================
-function updateIndicatorsUI(key, d) {
-  const { rsi, ema20, ema50, macd, price, volRatio, support, resist, div } = d;
-
-  // RSI
-  const rsiEl = document.getElementById('rsi' + key);
-  if (rsiEl) {
-    rsiEl.textContent = rsi.toFixed(1);
-    rsiEl.style.color = rsi < 35 ? 'var(--green)' : rsi > 65 ? 'var(--red)' : 'var(--white)';
-  }
-  const rsiBar = document.getElementById('rsiBar' + key);
-  if (rsiBar) { rsiBar.style.width = rsi + '%'; rsiBar.style.background = rsi < 35 ? 'var(--green)' : rsi > 65 ? 'var(--red)' : 'var(--accent)'; }
-  const rsiZone = document.getElementById('rsiZone' + key);
-  if (rsiZone) rsiZone.textContent = rsi < 30 ? 'Сильно перепродан' : rsi < 40 ? 'Перепродан' : rsi > 70 ? 'Сильно перекуплен' : rsi > 60 ? 'Перекуплен' : 'Нейтральная зона';
-  const divEl = document.getElementById('rsiDiv' + key);
-  if (divEl) {
-    if (div === 'bull') { divEl.className = 'div-badge div-bull'; divEl.textContent = '▲ Бычья дивергенция'; }
-    else if (div === 'bear') { divEl.className = 'div-badge div-bear'; divEl.textContent = '▼ Медвежья дивергенция'; }
-    else { divEl.className = 'div-badge div-none'; divEl.textContent = 'Дивергенция: нет'; }
-  }
-
-  // MACD
-  const macdEl = document.getElementById('macd' + key);
-  if (macdEl) { macdEl.textContent = macd.macd.toFixed(1); macdEl.style.color = macd.hist > 0 ? 'var(--green)' : 'var(--red)'; }
-  const macdSub = document.getElementById('macdSub' + key);
-  if (macdSub) macdSub.textContent = `Hist: ${macd.hist > 0 ? '+' : ''}${macd.hist.toFixed(2)} | Sig: ${macd.signal.toFixed(1)}`;
-  const macdDiv = document.getElementById('macdDiv' + key);
-  if (macdDiv) {
-    if (macd.cross === 'bull') { macdDiv.className = 'div-badge div-bull'; macdDiv.textContent = '▲ Пересечение вверх'; }
-    else if (macd.cross === 'bear') { macdDiv.className = 'div-badge div-bear'; macdDiv.textContent = '▼ Пересечение вниз'; }
-    else { macdDiv.className = 'div-badge div-none'; macdDiv.textContent = `Гистограмма: ${macd.hist > 0 ? 'растёт' : 'падает'}`; }
-  }
-
-  // EMA
-  const emaEl = document.getElementById('ema' + key);
-  if (emaEl) emaEl.textContent = ema20.toFixed(0);
-  const emaSub = document.getElementById('emaSub' + key);
-  if (emaSub) emaSub.textContent = `EMA20: ${ema20.toFixed(0)} / EMA50: ${ema50.toFixed(0)}`;
-  const emaCross = document.getElementById('emaCross' + key);
-  if (emaCross) {
-    if (price > ema20 && ema20 > ema50) { emaCross.className = 'div-badge div-bull'; emaCross.textContent = '▲ Цена > EMA20 > EMA50'; }
-    else if (price < ema20 && ema20 < ema50) { emaCross.className = 'div-badge div-bear'; emaCross.textContent = '▼ Цена < EMA20 < EMA50'; }
-    else { emaCross.className = 'div-badge div-none'; emaCross.textContent = 'EMA: смешанный'; }
-  }
-
-  // Volume
-  const volVal = document.getElementById('volVal' + key);
-  const volPct = (volRatio * 100).toFixed(0);
-  if (volVal) { volVal.textContent = volPct + '%'; volVal.style.color = volRatio > 1.5 ? 'var(--green)' : volRatio < 0.7 ? 'var(--red)' : 'var(--white)'; }
-  const volBar = document.getElementById('volBar' + key);
-  if (volBar) { volBar.style.width = Math.min(volRatio * 50, 100) + '%'; volBar.style.background = volRatio > 1.5 ? 'var(--green)' : volRatio < 0.7 ? 'var(--red)' : 'var(--accent)'; }
-  const volSub = document.getElementById('volSub' + key);
-  if (volSub) volSub.textContent = volRatio > 1.5 ? 'Объём выше среднего ✓' : volRatio < 0.7 ? 'Объём ниже нормы ⚠' : 'Объём в норме';
-
-  // Levels
-  const suppEl = document.getElementById('support' + key);
-  const resEl  = document.getElementById('resist'  + key);
-  if (suppEl) suppEl.textContent = '$' + support.toFixed(0);
-  if (resEl)  resEl.textContent  = '$' + resist.toFixed(0);
+function updateIndicatorsUI(key,d) {
+  const {rsi,ema20,ema50,macd,price,volRatio,support,resist,div} = d;
+  const rsiEl=document.getElementById('rsi'+key);
+  if(rsiEl){rsiEl.textContent=rsi.toFixed(1);rsiEl.style.color=rsi<35?'var(--green)':rsi>65?'var(--red)':'var(--white)';}
+  const rsiBar=document.getElementById('rsiBar'+key);
+  if(rsiBar){rsiBar.style.width=rsi+'%';rsiBar.style.background=rsi<35?'var(--green)':rsi>65?'var(--red)':'var(--accent)';}
+  const rsiZone=document.getElementById('rsiZone'+key);
+  if(rsiZone) rsiZone.textContent=rsi<30?'Сильно перепродан':rsi<40?'Перепродан':rsi>70?'Сильно перекуплен':rsi>60?'Перекуплен':'Нейтральная зона';
+  const divEl=document.getElementById('rsiDiv'+key);
+  if(divEl){if(div==='bull'){divEl.className='div-badge div-bull';divEl.textContent='▲ Бычья дивергенция';}else if(div==='bear'){divEl.className='div-badge div-bear';divEl.textContent='▼ Медвежья дивергенция';}else{divEl.className='div-badge div-none';divEl.textContent='Дивергенция: нет';}}
+  const macdEl=document.getElementById('macd'+key);
+  if(macdEl){macdEl.textContent=macd.macd.toFixed(1);macdEl.style.color=macd.hist>0?'var(--green)':'var(--red)';}
+  const mSub=document.getElementById('macdSub'+key);
+  if(mSub) mSub.textContent=`Hist:${macd.hist>0?'+':''}${macd.hist.toFixed(2)} Sig:${macd.signal.toFixed(1)}`;
+  const mDiv=document.getElementById('macdDiv'+key);
+  if(mDiv){if(macd.cross==='bull'){mDiv.className='div-badge div-bull';mDiv.textContent='▲ Пересечение вверх';}else if(macd.cross==='bear'){mDiv.className='div-badge div-bear';mDiv.textContent='▼ Пересечение вниз';}else{mDiv.className='div-badge div-none';mDiv.textContent=`Гист:${macd.hist>0?'растёт':'падает'}`;}}
+  const emaEl=document.getElementById('ema'+key);
+  if(emaEl) emaEl.textContent=ema20.toFixed(0);
+  const eSub=document.getElementById('emaSub'+key);
+  if(eSub) eSub.textContent=`EMA20:${ema20.toFixed(0)} / EMA50:${ema50.toFixed(0)}`;
+  const eCross=document.getElementById('emaCross'+key);
+  if(eCross){if(price>ema20&&ema20>ema50){eCross.className='div-badge div-bull';eCross.textContent='▲ Цена>EMA20>EMA50';}else if(price<ema20&&ema20<ema50){eCross.className='div-badge div-bear';eCross.textContent='▼ Цена<EMA20<EMA50';}else{eCross.className='div-badge div-none';eCross.textContent='EMA: смешанный';}}
+  const volVal=document.getElementById('volVal'+key);
+  if(volVal){volVal.textContent=(volRatio*100).toFixed(0)+'%';volVal.style.color=volRatio>1.5?'var(--green)':volRatio<0.7?'var(--red)':'var(--white)';}
+  const volBar=document.getElementById('volBar'+key);
+  if(volBar){volBar.style.width=Math.min(volRatio*50,100)+'%';volBar.style.background=volRatio>1.5?'var(--green)':volRatio<0.7?'var(--red)':'var(--accent)';}
+  const volSub=document.getElementById('volSub'+key);
+  if(volSub) volSub.textContent=volRatio>1.5?'Объём выше среднего ✓':volRatio<0.7?'Объём ниже нормы ⚠':'Объём в норме';
+  const suppEl=document.getElementById('support'+key);
+  const resEl=document.getElementById('resist'+key);
+  if(suppEl) suppEl.textContent='$'+support.toFixed(0);
+  if(resEl)  resEl.textContent ='$'+resist.toFixed(0);
 }
 
 // ===================== SIGNAL GENERATION =====================
 function generateSignal(key, d, bulls, bears) {
-  const { rsi, ema20, ema50, macd, price, volRatio, support, resist, div } = d;
+  const {rsi,ema20,ema50,macd,atr,price,volRatio,support,resist,div,pattern,funding,oi} = d;
 
-  // Compute trend filter
   const filter = computeTrendFilter(key);
-  updateTrendFilterUI(key, filter);
+  updateTrendFilterUI(key,filter);
 
-  let longScore = 0, shortScore = 0;
-  const longReasons = [], shortReasons = [];
-  const MAX = 9; // +1 for trend filter bonus
+  const isLowTime = updateTimeFilter();
+  const timeMultiplier = isLowTime ? 0.7 : 1.0; // снижаем вес в неактивное время
 
-  // === RSI EXTREME FILTER ===
-  // Не шортим при RSI < 35 — рынок перепродан, высок риск отскока
+  let longScore=0,shortScore=0;
+  const longReasons=[],shortReasons=[];
+  const MAX=12;
+
+  // RSI extreme blocks
   const rsiBlocksShort = rsi < 35;
-  // Не лонгуем при RSI > 65 — рынок перекуплен, высок риск разворота вниз
   const rsiBlocksLong  = rsi > 65;
 
   // === ЛОНГ ===
-  if (rsi < 30) { longScore += 3; longReasons.push('RSI сильно перепродан (' + rsi.toFixed(1) + ')'); }
-  else if (rsi < 40) { longScore += 2; longReasons.push('RSI перепродан (' + rsi.toFixed(1) + ')'); }
-  if (price > ema20 && ema20 > ema50) { longScore += 2; longReasons.push('Цена > EMA20 > EMA50'); }
-  else if (price > ema50) { longScore += 1; longReasons.push('Цена выше EMA50'); }
-  if (macd.cross === 'bull') { longScore += 2; longReasons.push('MACD бычье пересечение'); }
-  else if (macd.hist > 0) { longScore += 1; longReasons.push('MACD гистограмма +'); }
-  if (div === 'bull') { longScore += 2; longReasons.push('Бычья дивергенция RSI'); }
-  if (price < support * 1.012) { longScore += 1; longReasons.push('Цена у поддержки'); }
-  if (bulls >= 2) { longScore += 1; longReasons.push(`MTF: ${bulls}/3 ТФ бычьих`); }
-  // Trend filter BONUS for long
-  if (filter.longOk && filter.cls === 'bull') { longScore += 1; longReasons.push('4H тренд подтверждает лонг'); }
+  if(rsi<30){longScore+=3;longReasons.push(`RSI сильно перепродан (${rsi.toFixed(1)})`);}
+  else if(rsi<40){longScore+=2;longReasons.push(`RSI перепродан (${rsi.toFixed(1)})`);}
+  if(price>ema20&&ema20>ema50){longScore+=2;longReasons.push('Цена>EMA20>EMA50');}
+  else if(price>ema50){longScore+=1;longReasons.push('Цена выше EMA50');}
+  if(macd.cross==='bull'){longScore+=2;longReasons.push('MACD бычье пересечение');}
+  else if(macd.hist>0){longScore+=1;longReasons.push('MACD гист.+');}
+  if(div==='bull'){longScore+=2;longReasons.push('Бычья дивергенция RSI');}
+  if(price<support*1.012){longScore+=1;longReasons.push('Цена у поддержки');}
+  if(bulls>=2){longScore+=1;longReasons.push(`MTF: ${bulls}/3 бычьих`);}
+  if(filter.longOk&&filter.cls==='bull'){longScore+=1;longReasons.push('4H тренд подтверждает лонг');}
+  // Паттерн
+  if(pattern&&pattern.dir==='bull'){longScore+=2;longReasons.push(`Паттерн: ${pattern.name}`);}
+  // OI растёт + цена растёт = подтверждение
+  if(oi&&oi.change>1){longScore+=1;longReasons.push(`OI +${oi.change.toFixed(1)}% — деньги входят`);}
+  // Фандинг отрицательный = шорты перегреты, лонг выгоднее
+  if(funding&&funding.rate<-0.0005){longScore+=1;longReasons.push('Funding отриц. — шорты перегреты');}
 
   // === ШОРТ ===
-  if (rsi > 70) { shortScore += 3; shortReasons.push('RSI сильно перекуплен (' + rsi.toFixed(1) + ')'); }
-  else if (rsi > 60) { shortScore += 2; shortReasons.push('RSI перекуплен (' + rsi.toFixed(1) + ')'); }
-  if (price < ema20 && ema20 < ema50) { shortScore += 2; shortReasons.push('Цена < EMA20 < EMA50'); }
-  else if (price < ema50) { shortScore += 1; shortReasons.push('Цена ниже EMA50'); }
-  if (macd.cross === 'bear') { shortScore += 2; shortReasons.push('MACD медвежье пересечение'); }
-  else if (macd.hist < 0) { shortScore += 1; shortReasons.push('MACD гистограмма −'); }
-  if (div === 'bear') { shortScore += 2; shortReasons.push('Медвежья дивергенция RSI'); }
-  if (price > resist * 0.988) { shortScore += 1; shortReasons.push('Цена у сопротивления'); }
-  if (bears >= 2) { shortScore += 1; shortReasons.push(`MTF: ${bears}/3 ТФ медвежьих`); }
-  if (filter.shortOk && filter.cls === 'bear') { shortScore += 1; shortReasons.push('4H тренд подтверждает шорт'); }
+  if(rsi>70){shortScore+=3;shortReasons.push(`RSI сильно перекуплен (${rsi.toFixed(1)})`);}
+  else if(rsi>60){shortScore+=2;shortReasons.push(`RSI перекуплен (${rsi.toFixed(1)})`);}
+  if(price<ema20&&ema20<ema50){shortScore+=2;shortReasons.push('Цена<EMA20<EMA50');}
+  else if(price<ema50){shortScore+=1;shortReasons.push('Цена ниже EMA50');}
+  if(macd.cross==='bear'){shortScore+=2;shortReasons.push('MACD медвежье пересечение');}
+  else if(macd.hist<0){shortScore+=1;shortReasons.push('MACD гист.−');}
+  if(div==='bear'){shortScore+=2;shortReasons.push('Медвежья дивергенция RSI');}
+  if(price>resist*0.988){shortScore+=1;shortReasons.push('Цена у сопротивления');}
+  if(bears>=2){shortScore+=1;shortReasons.push(`MTF: ${bears}/3 медвежьих`);}
+  if(filter.shortOk&&filter.cls==='bear'){shortScore+=1;shortReasons.push('4H тренд подтверждает шорт');}
+  if(pattern&&pattern.dir==='bear'){shortScore+=2;shortReasons.push(`Паттерн: ${pattern.name}`);}
+  if(oi&&oi.change<-1){shortScore+=1;shortReasons.push(`OI ${oi.change.toFixed(1)}% — позиции закрываются`);}
+  if(funding&&funding.rate>0.001){shortScore+=1;shortReasons.push('Funding высокий — лонги перегреты');}
 
-  const volOk = volRatio >= 0.8;
-  const effectiveLong  = volOk ? longScore  : Math.floor(longScore  * 0.7);
-  const effectiveShort = volOk ? shortScore : Math.floor(shortScore * 0.7);
+  const volOk = volRatio>=0.8;
+  const timeFactor = isLowTime ? 0.7 : 1.0;
+  const effectiveLong  = Math.floor(longScore  * (volOk?1:0.7) * timeFactor);
+  const effectiveShort = Math.floor(shortScore * (volOk?1:0.7) * timeFactor);
 
-  const card  = document.getElementById('signalCard'   + key);
-  const badge = document.getElementById('signalBadge'  + key);
-  const volWarn   = document.getElementById('volWarn'   + key);
-  const trendWarn = document.getElementById('trendWarn' + key);
-  if (!card) return;
+  const card  = document.getElementById('signalCard'+key);
+  const badge = document.getElementById('signalBadge'+key);
+  const volWarn   = document.getElementById('volWarn'+key);
+  const trendWarn = document.getElementById('trendWarn'+key);
+  if(!card) return;
 
   volWarn.classList.toggle('hidden', volOk);
+  if(!volOk) volWarn.textContent = `⚠ Объём ${(volRatio*100).toFixed(0)}% от нормы`;
 
-  const MIN_SCORE = 4;
+  const MIN_SCORE=5;
 
-  // === RSI EXTREME BLOCKS — проверяем ДО тренд-фильтра ===
-  if (rsiBlocksShort && effectiveShort >= MIN_SCORE && effectiveShort > effectiveLong) {
-    card.className  = 'signal-card blocked';
-    badge.className = 'signal-badge badge-blocked';
-    badge.textContent = '⛔ ШОРТ ЗАБЛОКИРОВАН';
-    setStrengthDots(key, shortScore, MAX, 'wait');
-    document.getElementById('sigScore' + key).textContent = `Сила: ${shortScore}/${MAX}`;
-    document.getElementById('entry'    + key).textContent = '$' + price.toFixed(0);
-    document.getElementById('sl'       + key).textContent = '—';
-    document.getElementById('tp1'      + key).textContent = '—';
-    document.getElementById('tp2'      + key).textContent = '—';
-    document.getElementById('rr'       + key).textContent = 'R:R --';
-    const rEl = document.getElementById('reason' + key);
-    rEl.className = 'reason-box blocked-box';
-    rEl.textContent = `RSI ${rsi.toFixed(1)} — рынок перепродан, шорт опасен (риск отскока). ${shortReasons.join(' • ')}`;
-    trendWarn.textContent = `⚠ RSI ${rsi.toFixed(1)} < 35 — шорт заблокирован`;
-    trendWarn.classList.remove('hidden');
-    updateTabSig(key, 'blocked');
-    return;
+  // ATR-based stop (1.5x ATR)
+  const atrStop = atr * 1.5;
+  const atrPctStr = (atr/price*100).toFixed(2)+'%';
+
+  const reasonEl = document.getElementById('reason'+key);
+
+  // RSI blocks
+  if(rsiBlocksShort&&effectiveShort>=MIN_SCORE&&effectiveShort>effectiveLong) {
+    return renderBlocked(key,`RSI ${rsi.toFixed(1)} — перепродан, шорт опасен (отскок). `+shortReasons.join(' • '),`⚠ RSI ${rsi.toFixed(1)} < 35 — шорт заблокирован`,shortScore,MAX,price);
   }
-
-  if (rsiBlocksLong && effectiveLong >= MIN_SCORE && effectiveLong > effectiveShort) {
-    card.className  = 'signal-card blocked';
-    badge.className = 'signal-badge badge-blocked';
-    badge.textContent = '⛔ ЛОНГ ЗАБЛОКИРОВАН';
-    setStrengthDots(key, longScore, MAX, 'wait');
-    document.getElementById('sigScore' + key).textContent = `Сила: ${longScore}/${MAX}`;
-    document.getElementById('entry'    + key).textContent = '$' + price.toFixed(0);
-    document.getElementById('sl'       + key).textContent = '—';
-    document.getElementById('tp1'      + key).textContent = '—';
-    document.getElementById('tp2'      + key).textContent = '—';
-    document.getElementById('rr'       + key).textContent = 'R:R --';
-    const rEl = document.getElementById('reason' + key);
-    rEl.className = 'reason-box blocked-box';
-    rEl.textContent = `RSI ${rsi.toFixed(1)} — рынок перекуплен, лонг опасен (риск разворота). ${longReasons.join(' • ')}`;
-    trendWarn.textContent = `⚠ RSI ${rsi.toFixed(1)} > 65 — лонг заблокирован`;
-    trendWarn.classList.remove('hidden');
-    updateTabSig(key, 'blocked');
-    return;
+  if(rsiBlocksLong&&effectiveLong>=MIN_SCORE&&effectiveLong>effectiveShort) {
+    return renderBlocked(key,`RSI ${rsi.toFixed(1)} — перекуплен, лонг опасен. `+longReasons.join(' • '),`⚠ RSI ${rsi.toFixed(1)} > 65 — лонг заблокирован`,longScore,MAX,price);
   }
-
-  // === CHECK TREND FILTER BLOCKS ===
-  const longBlocked  = !filter.longOk  && effectiveLong  >= MIN_SCORE;
-  const shortBlocked = !filter.shortOk && effectiveShort >= MIN_SCORE;
-
-  if (longBlocked && effectiveLong > effectiveShort) {
-    // Signal detected but BLOCKED by trend filter
-    card.className  = 'signal-card blocked';
-    badge.className = 'signal-badge badge-blocked';
-    badge.textContent = '⛔ ЛОНГ ЗАБЛОКИРОВАН';
-    setStrengthDots(key, longScore, MAX, 'wait');
-    document.getElementById('sigScore'  + key).textContent = `Сила: ${longScore}/${MAX}`;
-    document.getElementById('entry'     + key).textContent = '$' + price.toFixed(0);
-    document.getElementById('sl'        + key).textContent = '—';
-    document.getElementById('tp1'       + key).textContent = '—';
-    document.getElementById('tp2'       + key).textContent = '—';
-    document.getElementById('rr'        + key).textContent = 'R:R --';
-    const reasonEl = document.getElementById('reason' + key);
-    reasonEl.className = 'reason-box blocked-box';
-    reasonEl.textContent = `${filter.label}. ${longReasons.join(' • ')}`;
-    trendWarn.textContent = '🚫 ' + filter.label;
-    trendWarn.classList.remove('hidden');
-    updateTabSig(key, 'blocked');
-    return;
+  // Trend filter blocks
+  if(!filter.longOk&&effectiveLong>=MIN_SCORE&&effectiveLong>effectiveShort) {
+    return renderBlocked(key,filter.label+'. '+longReasons.join(' • '),'🚫 '+filter.label,longScore,MAX,price);
   }
-
-  if (shortBlocked && effectiveShort > effectiveLong) {
-    card.className  = 'signal-card blocked';
-    badge.className = 'signal-badge badge-blocked';
-    badge.textContent = '⛔ ШОРТ ЗАБЛОКИРОВАН';
-    setStrengthDots(key, shortScore, MAX, 'wait');
-    document.getElementById('sigScore'  + key).textContent = `Сила: ${shortScore}/${MAX}`;
-    document.getElementById('entry'     + key).textContent = '$' + price.toFixed(0);
-    document.getElementById('sl'        + key).textContent = '—';
-    document.getElementById('tp1'       + key).textContent = '—';
-    document.getElementById('tp2'       + key).textContent = '—';
-    document.getElementById('rr'        + key).textContent = 'R:R --';
-    const reasonEl = document.getElementById('reason' + key);
-    reasonEl.className = 'reason-box blocked-box';
-    reasonEl.textContent = `${filter.label}. ${shortReasons.join(' • ')}`;
-    trendWarn.textContent = '🚫 ' + filter.label;
-    trendWarn.classList.remove('hidden');
-    updateTabSig(key, 'blocked');
-    return;
+  if(!filter.shortOk&&effectiveShort>=MIN_SCORE&&effectiveShort>effectiveLong) {
+    return renderBlocked(key,filter.label+'. '+shortReasons.join(' • '),'🚫 '+filter.label,shortScore,MAX,price);
   }
+  // Time warning
+  if(isLowTime) { trendWarn.textContent='🌙 Ночное время UTC — сигналы ослаблены'; trendWarn.classList.remove('hidden'); }
+  else trendWarn.classList.add('hidden');
 
-  trendWarn.classList.add('hidden');
-  const reasonEl = document.getElementById('reason' + key);
-  reasonEl.className = 'reason-box';
+  reasonEl.className='reason-box';
 
-  if (effectiveLong >= MIN_SCORE && effectiveLong > effectiveShort && filter.longOk) {
-    const entry = price;
-    // Стоп не более 2% от цены входа
-    const sl    = Math.max(Math.min(support * 0.994, price * 0.99), price * 0.98);
-    const risk  = entry - sl;
-    const tp1   = entry + risk * 1.5;
-    const tp2   = entry + risk * 2.5;
-    const rr    = risk > 0 ? ((tp1 - entry) / risk).toFixed(1) : '--';
+  if(effectiveLong>=MIN_SCORE&&effectiveLong>effectiveShort&&filter.longOk) {
+    const entry=price;
+    const sl=Math.max(entry-atrStop, entry*0.98); // ATR stop, мин 2%
+    const risk=entry-sl;
+    const tp1=entry+risk*1.5;
+    const tp2=entry+risk*2.5;
+    const rr=risk>0?((tp1-entry)/risk).toFixed(1):'--';
 
-    card.className  = 'signal-card long';
-    badge.className = 'signal-badge badge-long';
-    badge.textContent = '▲ ЛОНГ';
-    setStrengthDots(key, longScore, MAX, 'long');
-    document.getElementById('sigScore' + key).textContent = `Сила: ${longScore}/${MAX}`;
-    document.getElementById('entry'    + key).textContent = '$' + entry.toFixed(0);
-    document.getElementById('sl'       + key).textContent = '$' + sl.toFixed(0);
-    document.getElementById('tp1'      + key).textContent = '$' + tp1.toFixed(0);
-    document.getElementById('tp2'      + key).textContent = '$' + tp2.toFixed(0);
-    document.getElementById('rr'       + key).textContent = `R:R 1:${rr}`;
-    reasonEl.textContent = longReasons.join(' • ');
-    updateTabSig(key, 'long');
+    card.className='signal-card long';
+    badge.className='signal-badge badge-long';
+    badge.textContent='▲ ЛОНГ';
+    setStrengthDots(key,longScore,MAX,'long');
+    document.getElementById('sigScore'+key).textContent=`Сила: ${longScore}/${MAX}`;
+    document.getElementById('entry'+key).textContent='$'+entry.toFixed(0);
+    document.getElementById('sl'+key).textContent='$'+sl.toFixed(0);
+    document.getElementById('tp1'+key).textContent='$'+tp1.toFixed(0);
+    document.getElementById('tp2'+key).textContent='$'+tp2.toFixed(0);
+    document.getElementById('rr'+key).textContent=`R:R 1:${rr}`;
+    document.getElementById('atrBadge'+key).textContent=`ATR ${atrPctStr}`;
+    reasonEl.textContent=longReasons.join(' • ');
+    updateTabSig(key,'long');
 
-    if (lastSignals[key] !== 'LONG') {
-      sendTG(`🟢 СИГНАЛ ЛОНГ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп: $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n\n📊 RSI: ${rsi.toFixed(1)}\n📈 EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n🔹 MACD hist: ${macd.hist.toFixed(2)}\n✅ Фильтр тренда: ${filter.label}\n\n⚡ ${longReasons.join('\n• ')}`);
-      lastSignals[key] = 'LONG';
-      addLog(`СИГНАЛ ЛОНГ ${key} отправлен`, 'ok');
+    if(lastSignals[key]!=='LONG') {
+      const sig={asset:key,dir:'LONG',entry:entry.toFixed(0),sl:sl.toFixed(0),tp1:tp1.toFixed(0),tp2:tp2.toFixed(0),rr,time:new Date().toISOString(),result:'open',atr:atrPctStr};
+      recordSignal(sig);
+      sendTG(`🟢 СИГНАЛ ЛОНГ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп (ATR): $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n📈 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bull'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${longReasons.join('\n• ')}`);
+      lastSignals[key]='LONG';
+      addLog(`ЛОНГ ${key} $${entry.toFixed(0)} SL:$${sl.toFixed(0)}`,'ok');
     }
 
-  } else if (effectiveShort >= MIN_SCORE && effectiveShort > effectiveLong && filter.shortOk) {
-    const entry = price;
-    // Стоп не более 2% от цены входа
-    const sl    = Math.min(Math.max(resist * 1.006, price * 1.01), price * 1.02);
-    const risk  = sl - entry;
-    const tp1   = entry - risk * 1.5;
-    const tp2   = entry - risk * 2.5;
-    const rr    = risk > 0 ? ((entry - tp1) / risk).toFixed(1) : '--';
+  } else if(effectiveShort>=MIN_SCORE&&effectiveShort>effectiveLong&&filter.shortOk) {
+    const entry=price;
+    const sl=Math.min(entry+atrStop, entry*1.02); // ATR stop, макс 2%
+    const risk=sl-entry;
+    const tp1=entry-risk*1.5;
+    const tp2=entry-risk*2.5;
+    const rr=risk>0?((entry-tp1)/risk).toFixed(1):'--';
 
-    card.className  = 'signal-card short';
-    badge.className = 'signal-badge badge-short';
-    badge.textContent = '▼ ШОРТ';
-    setStrengthDots(key, shortScore, MAX, 'short');
-    document.getElementById('sigScore' + key).textContent = `Сила: ${shortScore}/${MAX}`;
-    document.getElementById('entry'    + key).textContent = '$' + entry.toFixed(0);
-    document.getElementById('sl'       + key).textContent = '$' + sl.toFixed(0);
-    document.getElementById('tp1'      + key).textContent = '$' + tp1.toFixed(0);
-    document.getElementById('tp2'      + key).textContent = '$' + tp2.toFixed(0);
-    document.getElementById('rr'       + key).textContent = `R:R 1:${rr}`;
-    reasonEl.textContent = shortReasons.join(' • ');
-    updateTabSig(key, 'short');
+    card.className='signal-card short';
+    badge.className='signal-badge badge-short';
+    badge.textContent='▼ ШОРТ';
+    setStrengthDots(key,shortScore,MAX,'short');
+    document.getElementById('sigScore'+key).textContent=`Сила: ${shortScore}/${MAX}`;
+    document.getElementById('entry'+key).textContent='$'+entry.toFixed(0);
+    document.getElementById('sl'+key).textContent='$'+sl.toFixed(0);
+    document.getElementById('tp1'+key).textContent='$'+tp1.toFixed(0);
+    document.getElementById('tp2'+key).textContent='$'+tp2.toFixed(0);
+    document.getElementById('rr'+key).textContent=`R:R 1:${rr}`;
+    document.getElementById('atrBadge'+key).textContent=`ATR ${atrPctStr}`;
+    reasonEl.textContent=shortReasons.join(' • ');
+    updateTabSig(key,'short');
 
-    if (lastSignals[key] !== 'SHORT') {
-      sendTG(`🔴 СИГНАЛ ШОРТ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп: $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n\n📊 RSI: ${rsi.toFixed(1)}\n📉 EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n🔸 MACD hist: ${macd.hist.toFixed(2)}\n✅ Фильтр тренда: ${filter.label}\n\n⚡ ${shortReasons.join('\n• ')}`);
-      lastSignals[key] = 'SHORT';
-      addLog(`СИГНАЛ ШОРТ ${key} отправлен`, 'ok');
+    if(lastSignals[key]!=='SHORT') {
+      const sig={asset:key,dir:'SHORT',entry:entry.toFixed(0),sl:sl.toFixed(0),tp1:tp1.toFixed(0),tp2:tp2.toFixed(0),rr,time:new Date().toISOString(),result:'open',atr:atrPctStr};
+      recordSignal(sig);
+      sendTG(`🔴 СИГНАЛ ШОРТ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп (ATR): $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n📉 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bear'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${shortReasons.join('\n• ')}`);
+      lastSignals[key]='SHORT';
+      addLog(`ШОРТ ${key} $${entry.toFixed(0)} SL:$${sl.toFixed(0)}`,'ok');
     }
 
   } else {
-    card.className  = 'signal-card wait';
-    badge.className = 'signal-badge badge-wait';
-    badge.textContent = '◈ ОЖИДАНИЕ';
-    setStrengthDots(key, Math.max(longScore, shortScore), MAX, 'wait');
-    document.getElementById('sigScore' + key).textContent = `L:${longScore} / S:${shortScore}`;
-    document.getElementById('entry'    + key).textContent = '$' + price.toFixed(0);
-    document.getElementById('sl'       + key).textContent = '--';
-    document.getElementById('tp1'      + key).textContent = '--';
-    document.getElementById('tp2'      + key).textContent = '--';
-    document.getElementById('rr'       + key).textContent = 'R:R --';
-    reasonEl.textContent = `RSI ${rsi.toFixed(1)} — нет чёткого сигнала. L:${longScore}/${MAX} S:${shortScore}/${MAX}. Ждём подтверждения.`;
-    updateTabSig(key, 'wait');
-    lastSignals[key] = '';
+    card.className='signal-card wait';
+    badge.className='signal-badge badge-wait';
+    badge.textContent='◈ ОЖИДАНИЕ';
+    setStrengthDots(key,Math.max(longScore,shortScore),MAX,'wait');
+    document.getElementById('sigScore'+key).textContent=`L:${longScore} S:${shortScore}`;
+    document.getElementById('entry'+key).textContent='$'+price.toFixed(0);
+    document.getElementById('sl'+key).textContent='--';
+    document.getElementById('tp1'+key).textContent='--';
+    document.getElementById('tp2'+key).textContent='--';
+    document.getElementById('rr'+key).textContent='R:R --';
+    document.getElementById('atrBadge'+key).textContent=`ATR ${atrPctStr}`;
+    reasonEl.textContent=`RSI ${rsi.toFixed(1)} — нет сигнала. L:${longScore}/${MAX} S:${shortScore}/${MAX}`;
+    updateTabSig(key,'wait');
+    lastSignals[key]='';
   }
 }
 
-function updateTabSig(key, type) {
-  const el = document.getElementById('tabSig' + key);
-  if (!el) return;
-  el.className = 'asset-tab-sig ' + (type === 'long' ? 'long' : type === 'short' ? 'short' : '');
+function renderBlocked(key,reason,warnText,score,max,price) {
+  const card=document.getElementById('signalCard'+key);
+  const badge=document.getElementById('signalBadge'+key);
+  const trendWarn=document.getElementById('trendWarn'+key);
+  const reasonEl=document.getElementById('reason'+key);
+  if(!card) return;
+  card.className='signal-card blocked';
+  badge.className='signal-badge badge-blocked';
+  badge.textContent='⛔ ЗАБЛОКИРОВАН';
+  setStrengthDots(key,score,max,'wait');
+  document.getElementById('sigScore'+key).textContent=`Сила: ${score}/${max}`;
+  document.getElementById('entry'+key).textContent='$'+price.toFixed(0);
+  document.getElementById('sl'+key).textContent='—';
+  document.getElementById('tp1'+key).textContent='—';
+  document.getElementById('tp2'+key).textContent='—';
+  document.getElementById('rr'+key).textContent='R:R --';
+  reasonEl.className='reason-box blocked-box';
+  reasonEl.textContent=reason;
+  trendWarn.textContent=warnText;
+  trendWarn.classList.remove('hidden');
+  updateTabSig(key,'blocked');
 }
 
-function setStrengthDots(key, score, max, type) {
-  const wrap = document.getElementById('sigStrength' + key);
-  if (!wrap) return;
-  wrap.innerHTML = '';
-  for (let i = 0; i < max; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'sig-dot' + (i < score ? (' active ' + type) : '');
-    wrap.appendChild(dot);
-  }
+function updateTabSig(key,type) {
+  const el=document.getElementById('tabSig'+key);
+  if(!el) return;
+  el.className='asset-tab-sig'+(type==='long'?' long':type==='short'?' short':'');
+}
+
+function setStrengthDots(key,score,max,type) {
+  const wrap=document.getElementById('sigStrength'+key);
+  if(!wrap) return;
+  wrap.innerHTML='';
+  for(let i=0;i<max;i++){const d=document.createElement('div');d.className='sig-dot'+(i<score?' active '+type:'');wrap.appendChild(d);}
+}
+
+// ===================== SIGNAL TRACKER =====================
+function recordSignal(sig) {
+  signalHistory.unshift(sig);
+  if(signalHistory.length>50) signalHistory.pop();
+  openSignals.unshift({...sig, candles:0});
+  if(openSignals.length>20) openSignals.pop();
+  saveTracker();
+  renderTracker();
+}
+
+function checkSignalResults(key, currentPrice) {
+  openSignals.forEach(sig=>{
+    if(sig.asset!==key||sig.result!=='open') return;
+    const entry=parseFloat(sig.entry);
+    const sl=parseFloat(sig.sl);
+    const tp1=parseFloat(sig.tp1);
+    sig.candles=(sig.candles||0)+1;
+    let result=null;
+    if(sig.dir==='LONG') {
+      if(currentPrice>=tp1){result='win';sendTG(`✅ ТП1 достигнут! ЛОНГ ${sig.asset} $${sig.entry} → $${tp1}`);}
+      else if(currentPrice<=sl){result='loss';sendTG(`❌ Стоп! ЛОНГ ${sig.asset} $${sig.entry} → SL $${sl}`);}
+    } else {
+      if(currentPrice<=tp1){result='win';sendTG(`✅ ТП1 достигнут! ШОРТ ${sig.asset} $${sig.entry} → $${tp1}`);}
+      else if(currentPrice>=sl){result='loss';sendTG(`❌ Стоп! ШОРТ ${sig.asset} $${sig.entry} → SL $${sl}`);}
+    }
+    if(result) {
+      sig.result=result;
+      const idx=signalHistory.findIndex(s=>s.time===sig.time&&s.asset===sig.asset);
+      if(idx>=0) signalHistory[idx].result=result;
+      addLog(`${result==='win'?'✅':'❌'} ${sig.dir} ${sig.asset} — ${result==='win'?'ПОБЕДА':'ПОТЕРЯ'}`,'ok');
+      saveTracker();
+      renderTracker();
+    }
+  });
+  // Remove closed signals from open
+  openSignals=openSignals.filter(s=>s.result==='open');
+  saveTracker();
+}
+
+// Expiry: если сигнал открыт > N свечей — устарел
+function checkSignalExpiry() {
+  const maxCandles = currentTF==='15'?16:currentTF==='60'?8:4;
+  let changed=false;
+  openSignals.forEach(sig=>{
+    if(sig.result==='open'&&(sig.candles||0)>maxCandles){
+      sig.result='expired';
+      const idx=signalHistory.findIndex(s=>s.time===sig.time&&s.asset===sig.asset);
+      if(idx>=0) signalHistory[idx].result='expired';
+      sendTG(`⏰ Сигнал устарел: ${sig.dir} ${sig.asset} $${sig.entry} — цена не достигла уровней за ${maxCandles} свечей`);
+      addLog(`Сигнал ${sig.dir} ${sig.asset} устарел`,'warn');
+      changed=true;
+    }
+  });
+  openSignals=openSignals.filter(s=>s.result==='open');
+  if(changed){saveTracker();renderTracker();}
+}
+
+function saveTracker() {
+  localStorage.setItem('signalHistory',JSON.stringify(signalHistory));
+  localStorage.setItem('openSignals',JSON.stringify(openSignals));
+}
+
+function clearTracker() {
+  signalHistory=[];openSignals=[];
+  saveTracker();renderTracker();
+  addLog('История сигналов очищена','warn');
+}
+
+function renderTracker() {
+  const list=document.getElementById('trackerList');
+  if(!list) return;
+  // Stats
+  const total=signalHistory.length;
+  const wins=signalHistory.filter(s=>s.result==='win').length;
+  const losses=signalHistory.filter(s=>s.result==='loss').length;
+  const wr=total>0?Math.round(wins/(wins+losses||1)*100):0;
+  document.getElementById('statTotal').textContent=total;
+  document.getElementById('statWins').textContent=wins;
+  document.getElementById('statLoss').textContent=losses;
+  document.getElementById('statWR').textContent=wr+'%';
+  document.getElementById('statWR').style.color=wr>=55?'var(--green)':wr>=45?'var(--yellow)':'var(--red)';
+
+  if(total===0){list.innerHTML='<div style="font-size:12px;color:var(--dim);text-align:center;padding:20px">Сигналов ещё не было</div>';return;}
+  list.innerHTML=signalHistory.slice(0,15).map(s=>{
+    const dt=new Date(s.time);
+    const timeStr=dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');
+    const dateStr=(dt.getMonth()+1)+'/'+dt.getDate();
+    const resClass=s.result==='win'?'t-win':s.result==='loss'?'t-loss':s.result==='expired'?'t-exp':'t-open';
+    const resText=s.result==='win'?'✅ WIN':s.result==='loss'?'❌ LOSS':s.result==='expired'?'⏰ EXP':'🟡 OPEN';
+    return `<div class="tracker-item">
+      <div class="t-dir ${s.dir==='LONG'?'t-long':'t-short'}">${s.dir}</div>
+      <div class="t-info"><b style="color:var(--white)">${s.asset}</b> $${s.entry}<br>SL:$${s.sl} TP:$${s.tp1} | ${dateStr} ${timeStr}</div>
+      <div class="t-result ${resClass}">${resText}</div>
+    </div>`;
+  }).join('');
 }
 
 // ===================== TELEGRAM =====================
 async function sendTG(text) {
-  if (!tgToken || !tgChatId) return;
+  if(!tgToken||!tgChatId) return;
   try {
-    await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ chat_id: tgChatId, text })
-    });
-  } catch(e) { addLog('Ошибка TG: ' + e.message, 'warn'); }
+    await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:tgChatId,text})});
+  } catch(e){addLog('TG err: '+e.message,'warn');}
 }
 
 // ===================== LOG =====================
-function addLog(msg, type) {
-  const now  = new Date();
-  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  const container = document.getElementById('logContainer');
-  const entry = document.createElement('div');
-  entry.className = 'log-entry';
-  entry.innerHTML = `<span class="log-time">${time}</span><span class="log-${type || 'info'}">${msg}</span>`;
-  container.insertBefore(entry, container.firstChild);
-  while (container.children.length > 15) container.removeChild(container.lastChild);
+function addLog(msg,type) {
+  const now=new Date();
+  const time=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const c=document.getElementById('logContainer');
+  const e=document.createElement('div');
+  e.className='log-entry';
+  e.innerHTML=`<span class="log-time">${time}</span><span class="log-${type||'info'}">${msg}</span>`;
+  c.insertBefore(e,c.firstChild);
+  while(c.children.length>15) c.removeChild(c.lastChild);
 }
 </script>
 </body>
