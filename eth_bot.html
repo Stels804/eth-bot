@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crypto Signal Bot v4</title>
+<title>Crypto Signal Bot v4.3</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&display=swap');
 :root {
@@ -35,6 +35,9 @@ header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;alig
 .asset-tab.active.eth-active{border-bottom-color:#627EEA;color:#8aa4ff}
 .asset-tab.active.btc-active{border-bottom-color:#F7931A;color:#ffa940}
 .asset-tab.active.sol-active{border-bottom-color:#9945FF;color:#b877ff}
+.asset-tab.active.xrp-active{border-bottom-color:#00AAE4;color:#40c8ff}
+.asset-tab.active.doge-active{border-bottom-color:#C2A633;color:#e8c84a}
+.asset-tab.active.ada-active{border-bottom-color:#0D75C1;color:#3aa0f0}
 .asset-tab-sig{position:absolute;top:5px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--dim)}
 .asset-tab-sig.long{background:var(--green);box-shadow:0 0 5px var(--green)}
 .asset-tab-sig.short{background:var(--red);box-shadow:0 0 5px var(--red)}
@@ -76,6 +79,9 @@ main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
 .eth-theme::after{background:linear-gradient(90deg,transparent,#627EEA,#8aa4ff,transparent)}
 .btc-theme::after{background:linear-gradient(90deg,transparent,#F7931A,#ffc060,transparent)}
 .sol-theme::after{background:linear-gradient(90deg,transparent,#9945FF,#b877ff,transparent)}
+.xrp-theme::after{background:linear-gradient(90deg,transparent,#00AAE4,#40c8ff,transparent)}
+.doge-theme::after{background:linear-gradient(90deg,transparent,#C2A633,#e8c84a,transparent)}
+.ada-theme::after{background:linear-gradient(90deg,transparent,#0D75C1,#3aa0f0,transparent)}
 .pair-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .pair{font-size:11px;color:var(--dim);letter-spacing:2px;font-family:'Share Tech Mono',monospace}
 .tf-badge-sm{font-size:11px;color:var(--accent);font-family:'Share Tech Mono',monospace;background:rgba(0,180,255,.1);padding:2px 8px;border-radius:4px;border:1px solid rgba(0,180,255,.2)}
@@ -219,7 +225,7 @@ main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
 <body>
 
 <header>
-  <div class="logo">CRYPTO<em>/</em>SIG <small>v4.0</small></div>
+  <div class="logo">CRYPTO<em>/</em>SIG <small>v4.3</small></div>
   <div class="hdr-right">
     <div class="tf-tabs">
       <div class="tf-tab active" onclick="switchTF('15')" id="tf15">15M</div>
@@ -233,10 +239,13 @@ main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
   </div>
 </header>
 
-<div class="asset-tabs">
+<div class="asset-tabs" style="flex-wrap:wrap">
   <div class="asset-tab active eth-active" onclick="switchAsset('ETH')" id="assetTabETH">ETH<span class="asset-tab-sig" id="tabSigETH"></span></div>
   <div class="asset-tab" onclick="switchAsset('BTC')" id="assetTabBTC">BTC<span class="asset-tab-sig" id="tabSigBTC"></span></div>
   <div class="asset-tab" onclick="switchAsset('SOL')" id="assetTabSOL">SOL<span class="asset-tab-sig" id="tabSigSOL"></span></div>
+  <div class="asset-tab" onclick="switchAsset('XRP')" id="assetTabXRP">XRP<span class="asset-tab-sig" id="tabSigXRP"></span></div>
+  <div class="asset-tab" onclick="switchAsset('DOGE')" id="assetTabDOGE">DOGE<span class="asset-tab-sig" id="tabSigDOGE"></span></div>
+  <div class="asset-tab" onclick="switchAsset('ADA')" id="assetTabADA">ADA<span class="asset-tab-sig" id="tabSigADA"></span></div>
   <div class="asset-tab" onclick="switchAsset('STAT')" id="assetTabSTAT">📊</div>
 </div>
 
@@ -271,7 +280,7 @@ main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
       <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24ETH">--</div></div>
       <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24ETH">--</div></div>
       <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctETH">--</div></div>
-      <div class="stat"><div class="stat-label">ATR%</div><div class="stat-value" id="atrPctETH">--</div></div>
+      <div class="stat"><div class="stat-label">ADX</div><div class="stat-value" id="atrPctETH">--</div></div>
       <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundETH">--</div></div>
     </div>
     <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
@@ -336,7 +345,7 @@ main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
       <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24BTC">--</div></div>
       <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24BTC">--</div></div>
       <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctBTC">--</div></div>
-      <div class="stat"><div class="stat-label">ATR%</div><div class="stat-value" id="atrPctBTC">--</div></div>
+      <div class="stat"><div class="stat-label">ADX</div><div class="stat-value" id="atrPctBTC">--</div></div>
       <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundBTC">--</div></div>
     </div>
   </div>
@@ -403,7 +412,7 @@ main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
       <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24SOL">--</div></div>
       <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24SOL">--</div></div>
       <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctSOL">--</div></div>
-      <div class="stat"><div class="stat-label">ATR%</div><div class="stat-value" id="atrPctSOL">--</div></div>
+      <div class="stat"><div class="stat-label">ADX</div><div class="stat-value" id="atrPctSOL">--</div></div>
       <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundSOL">--</div></div>
     </div>
   </div>
@@ -452,6 +461,195 @@ main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
   </div>
 </div>
 
+<!-- XRP PANEL -->
+<div class="asset-panel" id="panelXRP">
+  <div class="trend-filter-card neut" id="trendFilterXRP">
+    <div class="tf-icon">🔍</div>
+    <div class="tf-info"><div class="tf-title" id="trendFilterTitleXRP">Фильтр тренда</div><div class="tf-sub" id="trendFilterSubXRP">Анализ...</div></div>
+    <div class="tf-badge neut" id="trendFilterBadgeXRP">ЖДЁМ</div>
+  </div>
+  <div class="price-card xrp-theme">
+    <div class="pair-row"><div class="pair">XRP/USDT · BYBIT</div><div class="tf-badge-sm" id="tfBadgeXRP">1H</div></div>
+    <div class="price-row"><div class="price" id="priceXRP">--.--</div><div class="price-change" id="changeXRP">--</div></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24XRP">--</div></div>
+      <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24XRP">--</div></div>
+      <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctXRP">--</div></div>
+      <div class="stat"><div class="stat-label">ADX</div><div class="stat-value" id="atrPctXRP">--</div></div>
+      <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundXRP">--</div></div>
+    </div>
+  </div>
+  <div class="oi-funding-row">
+    <div class="oi-box"><div class="oi-label">Open Interest</div><div class="oi-val" id="oiXRP">--</div><div class="oi-sub" id="oiChangeXRP">--</div></div>
+    <div class="oi-box"><div class="oi-label">Funding Rate</div><div class="oi-val" id="fundValXRP">--</div><div class="oi-sub" id="fundSignalXRP">--</div></div>
+    <div class="oi-box"><div class="oi-label">Паттерн</div><div class="oi-val" id="patternValXRP">--</div><div class="oi-sub" id="patternSubXRP">--</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Мульти-таймфрейм · XRP</div>
+    <div class="mtf-grid">
+      <div class="mtf-cell" id="mtfXRP15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfXRP15sig">--</div><div class="mtf-rsi" id="mtfXRP15rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfXRP60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfXRP60sig">--</div><div class="mtf-rsi" id="mtfXRP60rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfXRP240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfXRP240sig">--</div><div class="mtf-rsi" id="mtfXRP240rsi">RSI --</div></div>
+    </div>
+    <div class="mtf-confirm" id="mtfConfirmXRP">Загрузка...</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Индикаторы · XRP</div>
+    <div class="ind-grid">
+      <div class="ind-box"><div class="ind-box-label">RSI (14)</div><div class="ind-box-val" id="rsiXRP">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarXRP"></div></div></div><div class="ind-box-sub" id="rsiZoneXRP">--</div><div class="div-badge div-none" id="rsiDivXRP">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">MACD</div><div class="ind-box-val" id="macdXRP">--</div><div class="ind-box-sub" id="macdSubXRP">--</div><div class="div-badge div-none" id="macdDivXRP">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">EMA 20/50</div><div class="ind-box-val" id="emaXRP">--</div><div class="ind-box-sub" id="emaSubXRP">--</div><div class="div-badge div-none" id="emaCrossXRP">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">Объём vs avg20</div><div class="ind-box-val" id="volValXRP">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarXRP"></div></div></div><div class="ind-box-sub" id="volSubXRP">--</div></div>
+    </div>
+    <div class="levels-row">
+      <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportXRP">--</div></div>
+      <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistXRP">--</div></div>
+    </div>
+  </div>
+  <div class="signal-card wait" id="signalCardXRP">
+    <div class="signal-header">
+      <div class="signal-badge badge-wait" id="signalBadgeXRP">АНАЛИЗ</div>
+      <div class="sig-meta"><div class="sig-score" id="sigScoreXRP">--</div><div class="sig-strength" id="sigStrengthXRP"></div></div>
+    </div>
+    <div class="entry-grid">
+      <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entryXRP">--</div></div>
+      <div class="entry-box"><div class="entry-label">Стоп (ATR)</div><div class="entry-val c-sl" id="slXRP">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1XRP">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2XRP">--</div></div>
+    </div>
+    <div><span class="rr-badge" id="rrXRP">R:R --</span><span class="atr-badge" id="atrBadgeXRP">ATR --</span></div>
+    <div class="reason-box" id="reasonXRP">Ожидание данных...</div>
+    <div class="warn-row vol-warning hidden" id="volWarnXRP">⚠ Низкий объём</div>
+    <div class="warn-row trend-warning hidden" id="trendWarnXRP">🚫 Заблокирован</div>
+  </div>
+</div>
+
+<!-- DOGE PANEL -->
+<div class="asset-panel" id="panelDOGE">
+  <div class="trend-filter-card neut" id="trendFilterDOGE">
+    <div class="tf-icon">🔍</div>
+    <div class="tf-info"><div class="tf-title" id="trendFilterTitleDOGE">Фильтр тренда</div><div class="tf-sub" id="trendFilterSubDOGE">Анализ...</div></div>
+    <div class="tf-badge neut" id="trendFilterBadgeDOGE">ЖДЁМ</div>
+  </div>
+  <div class="price-card doge-theme">
+    <div class="pair-row"><div class="pair">DOGE/USDT · BYBIT</div><div class="tf-badge-sm" id="tfBadgeDOGE">1H</div></div>
+    <div class="price-row"><div class="price" id="priceDOGE">--.--</div><div class="price-change" id="changeDOGE">--</div></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24DOGE">--</div></div>
+      <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24DOGE">--</div></div>
+      <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctDOGE">--</div></div>
+      <div class="stat"><div class="stat-label">ADX</div><div class="stat-value" id="atrPctDOGE">--</div></div>
+      <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundDOGE">--</div></div>
+    </div>
+  </div>
+  <div class="oi-funding-row">
+    <div class="oi-box"><div class="oi-label">Open Interest</div><div class="oi-val" id="oiDOGE">--</div><div class="oi-sub" id="oiChangeDOGE">--</div></div>
+    <div class="oi-box"><div class="oi-label">Funding Rate</div><div class="oi-val" id="fundValDOGE">--</div><div class="oi-sub" id="fundSignalDOGE">--</div></div>
+    <div class="oi-box"><div class="oi-label">Паттерн</div><div class="oi-val" id="patternValDOGE">--</div><div class="oi-sub" id="patternSubDOGE">--</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Мульти-таймфрейм · DOGE</div>
+    <div class="mtf-grid">
+      <div class="mtf-cell" id="mtfDOGE15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfDOGE15sig">--</div><div class="mtf-rsi" id="mtfDOGE15rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfDOGE60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfDOGE60sig">--</div><div class="mtf-rsi" id="mtfDOGE60rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfDOGE240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfDOGE240sig">--</div><div class="mtf-rsi" id="mtfDOGE240rsi">RSI --</div></div>
+    </div>
+    <div class="mtf-confirm" id="mtfConfirmDOGE">Загрузка...</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Индикаторы · DOGE</div>
+    <div class="ind-grid">
+      <div class="ind-box"><div class="ind-box-label">RSI (14)</div><div class="ind-box-val" id="rsiDOGE">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarDOGE"></div></div></div><div class="ind-box-sub" id="rsiZoneDOGE">--</div><div class="div-badge div-none" id="rsiDivDOGE">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">MACD</div><div class="ind-box-val" id="macdDOGE">--</div><div class="ind-box-sub" id="macdSubDOGE">--</div><div class="div-badge div-none" id="macdDivDOGE">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">EMA 20/50</div><div class="ind-box-val" id="emaDOGE">--</div><div class="ind-box-sub" id="emaSubDOGE">--</div><div class="div-badge div-none" id="emaCrossDOGE">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">Объём vs avg20</div><div class="ind-box-val" id="volValDOGE">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarDOGE"></div></div></div><div class="ind-box-sub" id="volSubDOGE">--</div></div>
+    </div>
+    <div class="levels-row">
+      <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportDOGE">--</div></div>
+      <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistDOGE">--</div></div>
+    </div>
+  </div>
+  <div class="signal-card wait" id="signalCardDOGE">
+    <div class="signal-header">
+      <div class="signal-badge badge-wait" id="signalBadgeDOGE">АНАЛИЗ</div>
+      <div class="sig-meta"><div class="sig-score" id="sigScoreDOGE">--</div><div class="sig-strength" id="sigStrengthDOGE"></div></div>
+    </div>
+    <div class="entry-grid">
+      <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entryDOGE">--</div></div>
+      <div class="entry-box"><div class="entry-label">Стоп (ATR)</div><div class="entry-val c-sl" id="slDOGE">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1DOGE">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2DOGE">--</div></div>
+    </div>
+    <div><span class="rr-badge" id="rrDOGE">R:R --</span><span class="atr-badge" id="atrBadgeDOGE">ATR --</span></div>
+    <div class="reason-box" id="reasonDOGE">Ожидание данных...</div>
+    <div class="warn-row vol-warning hidden" id="volWarnDOGE">⚠ Низкий объём</div>
+    <div class="warn-row trend-warning hidden" id="trendWarnDOGE">🚫 Заблокирован</div>
+  </div>
+</div>
+
+<!-- ADA PANEL -->
+<div class="asset-panel" id="panelADA">
+  <div class="trend-filter-card neut" id="trendFilterADA">
+    <div class="tf-icon">🔍</div>
+    <div class="tf-info"><div class="tf-title" id="trendFilterTitleADA">Фильтр тренда</div><div class="tf-sub" id="trendFilterSubADA">Анализ...</div></div>
+    <div class="tf-badge neut" id="trendFilterBadgeADA">ЖДЁМ</div>
+  </div>
+  <div class="price-card ada-theme">
+    <div class="pair-row"><div class="pair">ADA/USDT · BYBIT</div><div class="tf-badge-sm" id="tfBadgeADA">1H</div></div>
+    <div class="price-row"><div class="price" id="priceADA">--.--</div><div class="price-change" id="changeADA">--</div></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">MAX</div><div class="stat-value" id="high24ADA">--</div></div>
+      <div class="stat"><div class="stat-label">MIN</div><div class="stat-value" id="low24ADA">--</div></div>
+      <div class="stat"><div class="stat-label">VOL%</div><div class="stat-value" id="volPctADA">--</div></div>
+      <div class="stat"><div class="stat-label">ADX</div><div class="stat-value" id="atrPctADA">--</div></div>
+      <div class="stat"><div class="stat-label">FUND</div><div class="stat-value" id="fundADA">--</div></div>
+    </div>
+  </div>
+  <div class="oi-funding-row">
+    <div class="oi-box"><div class="oi-label">Open Interest</div><div class="oi-val" id="oiADA">--</div><div class="oi-sub" id="oiChangeADA">--</div></div>
+    <div class="oi-box"><div class="oi-label">Funding Rate</div><div class="oi-val" id="fundValADA">--</div><div class="oi-sub" id="fundSignalADA">--</div></div>
+    <div class="oi-box"><div class="oi-label">Паттерн</div><div class="oi-val" id="patternValADA">--</div><div class="oi-sub" id="patternSubADA">--</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Мульти-таймфрейм · ADA</div>
+    <div class="mtf-grid">
+      <div class="mtf-cell" id="mtfADA15"><div class="mtf-tf">15M</div><div class="mtf-sig neut" id="mtfADA15sig">--</div><div class="mtf-rsi" id="mtfADA15rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfADA60"><div class="mtf-tf">1H</div><div class="mtf-sig neut" id="mtfADA60sig">--</div><div class="mtf-rsi" id="mtfADA60rsi">RSI --</div></div>
+      <div class="mtf-cell" id="mtfADA240"><div class="mtf-tf">4H</div><div class="mtf-sig neut" id="mtfADA240sig">--</div><div class="mtf-rsi" id="mtfADA240rsi">RSI --</div></div>
+    </div>
+    <div class="mtf-confirm" id="mtfConfirmADA">Загрузка...</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Индикаторы · ADA</div>
+    <div class="ind-grid">
+      <div class="ind-box"><div class="ind-box-label">RSI (14)</div><div class="ind-box-val" id="rsiADA">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="rsiBarADA"></div></div></div><div class="ind-box-sub" id="rsiZoneADA">--</div><div class="div-badge div-none" id="rsiDivADA">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">MACD</div><div class="ind-box-val" id="macdADA">--</div><div class="ind-box-sub" id="macdSubADA">--</div><div class="div-badge div-none" id="macdDivADA">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">EMA 20/50</div><div class="ind-box-val" id="emaADA">--</div><div class="ind-box-sub" id="emaSubADA">--</div><div class="div-badge div-none" id="emaCrossADA">--</div></div>
+      <div class="ind-box"><div class="ind-box-label">Объём vs avg20</div><div class="ind-box-val" id="volValADA">--</div><div class="ind-bar-row"><div class="ind-bar-bg"><div class="ind-bar-fill" id="volBarADA"></div></div></div><div class="ind-box-sub" id="volSubADA">--</div></div>
+    </div>
+    <div class="levels-row">
+      <div class="lvl-box"><div class="lvl-label">Поддержка</div><div class="lvl-val" style="color:var(--red)" id="supportADA">--</div></div>
+      <div class="lvl-box"><div class="lvl-label">Сопротивление</div><div class="lvl-val" style="color:var(--green)" id="resistADA">--</div></div>
+    </div>
+  </div>
+  <div class="signal-card wait" id="signalCardADA">
+    <div class="signal-header">
+      <div class="signal-badge badge-wait" id="signalBadgeADA">АНАЛИЗ</div>
+      <div class="sig-meta"><div class="sig-score" id="sigScoreADA">--</div><div class="sig-strength" id="sigStrengthADA"></div></div>
+    </div>
+    <div class="entry-grid">
+      <div class="entry-box"><div class="entry-label">Вход</div><div class="entry-val c-entry" id="entryADA">--</div></div>
+      <div class="entry-box"><div class="entry-label">Стоп (ATR)</div><div class="entry-val c-sl" id="slADA">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 1</div><div class="entry-val c-tp1" id="tp1ADA">--</div></div>
+      <div class="entry-box"><div class="entry-label">Тейк 2</div><div class="entry-val c-tp2" id="tp2ADA">--</div></div>
+    </div>
+    <div><span class="rr-badge" id="rrADA">R:R --</span><span class="atr-badge" id="atrBadgeADA">ATR --</span></div>
+    <div class="reason-box" id="reasonADA">Ожидание данных...</div>
+    <div class="warn-row vol-warning hidden" id="volWarnADA">⚠ Низкий объём</div>
+    <div class="warn-row trend-warning hidden" id="trendWarnADA">🚫 Заблокирован</div>
+  </div>
+</div>
+
 <!-- STATS PANEL -->
 <div class="asset-panel" id="panelSTAT">
   <div class="tracker-card">
@@ -488,18 +686,25 @@ let currentTF    = '60';
 let currentAsset = 'ETH';
 let scanInterval = null, timerInterval = null, expiryInterval = null;
 let secondsLeft  = 300;
-let lastSignals  = { ETH:'', BTC:'', SOL:'' };
+let lastSignals  = { ETH:'', BTC:'', SOL:'', XRP:'', DOGE:'', ADA:'' };
+// Время последнего сигнала (мс) — cooldown между сигналами одного актива
+let lastSignalTime = { ETH:0, BTC:0, SOL:0, XRP:0, DOGE:0, ADA:0 };
+// Минимальный интервал между сигналами = 4 свечи текущего ТФ
+function getCooldownMs() { return getIntervalSeconds(currentTF) * 4 * 1000; }
 let btcMarketState = { trend:'neut', rsi:50, price:0 };
-let allData = { ETH:{}, BTC:{}, SOL:{} };
+let allData = { ETH:{}, BTC:{}, SOL:{}, XRP:{}, DOGE:{}, ADA:{} };
 // Signal tracker [{asset,dir,entry,sl,tp1,tp2,time,result,price_at_check}]
 let signalHistory = JSON.parse(localStorage.getItem('signalHistory') || '[]');
 // Active open signals for expiry check
 let openSignals = JSON.parse(localStorage.getItem('openSignals') || '[]');
 
 const ASSETS = [
-  { key:'ETH', symbol:'ETHUSDT', decimals:2 },
-  { key:'BTC', symbol:'BTCUSDT', decimals:0 },
-  { key:'SOL', symbol:'SOLUSDT', decimals:2 },
+  { key:'ETH',  symbol:'ETHUSDT',  decimals:2 },
+  { key:'BTC',  symbol:'BTCUSDT',  decimals:0 },
+  { key:'SOL',  symbol:'SOLUSDT',  decimals:2 },
+  { key:'XRP',  symbol:'XRPUSDT',  decimals:4 },
+  { key:'DOGE', symbol:'DOGEUSDT', decimals:5 },
+  { key:'ADA',  symbol:'ADAUSDT',  decimals:4 },
 ];
 
 document.getElementById('tgToken').value  = tgToken;
@@ -519,7 +724,7 @@ function saveSettings() {
 }
 
 function startBot() {
-  addLog('Бот v4.0 — ATR·паттерны·OI·фандинг·трекер', 'ok');
+  addLog('Бот v4.3 — ETH BTC SOL XRP DOGE ADA', 'ok');
   setStatus('АКТИВЕН', 'ok');
   updateTimeFilter();
   fetchAllData();
@@ -539,17 +744,17 @@ function switchTF(tf) {
   document.querySelectorAll('.tf-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tf'+tf).classList.add('active');
   const label = tf==='15'?'15M':tf==='60'?'1H':'4H';
-  ['ETH','BTC','SOL'].forEach(a=>{ const el=document.getElementById('tfBadge'+a); if(el) el.textContent=label; });
+  ['ETH','BTC','SOL','XRP','DOGE','ADA'].forEach(a=>{ const el=document.getElementById('tfBadge'+a); if(el) el.textContent=label; });
   if (scanInterval) clearInterval(scanInterval);
   const iv = getIntervalSeconds(tf);
   scanInterval = setInterval(fetchAllData, iv*1000);
   startTimer(iv);
-  ['ETH','BTC','SOL'].forEach(a=>{ if(allData[a]&&allData[a][tf]){ const d=allData[a][tf]; updateIndicatorsUI(a,d); generateSignal(a,d,countTrend(allData[a],'bull'),countTrend(allData[a],'bear')); }});
+  ['ETH','BTC','SOL','XRP','DOGE','ADA'].forEach(a=>{ if(allData[a]&&allData[a][tf]){ const d=allData[a][tf]; updateIndicatorsUI(a,d); generateSignal(a,d,countTrend(allData[a],'bull'),countTrend(allData[a],'bear')); }});
 }
 
 function switchAsset(asset) {
   currentAsset = asset;
-  ['ETH','BTC','SOL','STAT'].forEach(a=>{
+  ['ETH','BTC','SOL','XRP','DOGE','ADA','STAT'].forEach(a=>{
     const tab = document.getElementById('assetTab'+a);
     if (tab) tab.className = 'asset-tab' + (a===asset ? ' active '+a.toLowerCase()+'-active' : '');
     const panel = document.getElementById('panel'+a);
@@ -650,13 +855,18 @@ async function fetchAsset(asset) {
     const ema50    = calcEMA(closes,50);
     const macd     = calcMACD(closes);
     const atr      = calcATR(highs,lows,closes,14);
+    const adx      = calcADX(highs,lows,closes,14);
     const volRatio = calcVolRatio(volumes);
     const support  = calcSupportCluster(lows);
     const resist   = calcResistCluster(highs);
     const div      = detectRSIDivergence(closes,rsi,14);
     const pattern  = detectCandlePattern(opens,highs,lows,closes);
+    // Фильтр диапазона: High20-Low20 vs ATR
+    const high20 = Math.max(...highs.slice(-20));
+    const low20  = Math.min(...lows.slice(-20));
+    const rangeRatio = atr>0 ? (high20-low20)/(atr*3) : 1; // >1 = есть движение
 
-    allData[key][tf] = { rsi,ema20,ema50,macd,atr,price:closes[closes.length-1],closes,volumes,volRatio,support,resist,div,pattern,highs,lows,opens };
+    allData[key][tf] = { rsi,ema20,ema50,macd,atr,adx,rangeRatio,price:closes[closes.length-1],closes,volumes,volRatio,support,resist,div,pattern,highs,lows,opens };
   });
 
   // Attach OI+funding to all TF data
@@ -697,12 +907,18 @@ async function fetchAsset(asset) {
   // OI UI
   updateOIUI(key, oiData, fundData, allData[key][currentTF]?.pattern || {name:'--',dir:'none'});
 
-  // ATR % UI
+  // ATR % + ADX UI
   const d = allData[key][currentTF];
   if(d) {
     const atrPct = (d.atr/price*100).toFixed(2);
     const ap = document.getElementById('atrPct'+key);
-    if(ap) { ap.textContent=atrPct+'%'; ap.style.color=parseFloat(atrPct)>3?'var(--red)':parseFloat(atrPct)<1?'var(--green)':'var(--text)'; }
+    // Показываем ADX вместо ATR% в ячейке статистики (ATR% виден в бейдже сигнала)
+    const adxVal = d.adx ? d.adx.adx : 0;
+    if(ap) {
+      ap.textContent = 'ADX '+ adxVal.toFixed(0);
+      ap.style.color = adxVal<20?'var(--red)':adxVal<25?'var(--yellow)':'var(--green)';
+      ap.title = `ATR: ${atrPct}% | ADX: ${adxVal.toFixed(1)}`;
+    }
     // Fund badge in stats row
     const fb = document.getElementById('fund'+key);
     if(fb) { fb.textContent=(fundData.rate*100).toFixed(4)+'%'; fb.style.color=Math.abs(fundData.rate)>0.001?'var(--red)':'var(--text)'; }
@@ -846,6 +1062,44 @@ function calcATR(highs,lows,closes,period=14) {
   return atr;
 }
 
+// ADX — Average Directional Index (Wilder, period=14)
+// Возвращает { adx, plusDI, minusDI }
+// ADX < 20 = боковик, 20-25 = слабый тренд, >25 = тренд
+function calcADX(highs, lows, closes, period=14) {
+  const n = highs.length;
+  if(n < period*2) return { adx:0, plusDI:0, minusDI:0 };
+  const plusDM=[], minusDM=[], trs=[];
+  for(let i=1;i<n;i++){
+    const upMove   = highs[i]-highs[i-1];
+    const downMove = lows[i-1]-lows[i];
+    plusDM.push(upMove>downMove&&upMove>0 ? upMove : 0);
+    minusDM.push(downMove>upMove&&downMove>0 ? downMove : 0);
+    const hl=highs[i]-lows[i];
+    const hc=Math.abs(highs[i]-closes[i-1]);
+    const lc=Math.abs(lows[i]-closes[i-1]);
+    trs.push(Math.max(hl,hc,lc));
+  }
+  // Wilder smoothing
+  let smoothTR=trs.slice(0,period).reduce((a,b)=>a+b,0);
+  let smoothPDM=plusDM.slice(0,period).reduce((a,b)=>a+b,0);
+  let smoothMDM=minusDM.slice(0,period).reduce((a,b)=>a+b,0);
+  const dxArr=[];
+  for(let i=period;i<trs.length;i++){
+    smoothTR  = smoothTR  - smoothTR/period  + trs[i];
+    smoothPDM = smoothPDM - smoothPDM/period + plusDM[i];
+    smoothMDM = smoothMDM - smoothMDM/period + minusDM[i];
+    const pdi = smoothTR>0 ? (smoothPDM/smoothTR)*100 : 0;
+    const mdi = smoothTR>0 ? (smoothMDM/smoothTR)*100 : 0;
+    const dx  = (pdi+mdi)>0 ? Math.abs(pdi-mdi)/(pdi+mdi)*100 : 0;
+    dxArr.push({ dx, pdi, mdi });
+  }
+  if(dxArr.length<period) return { adx:0, plusDI:0, minusDI:0 };
+  let adx=dxArr.slice(0,period).reduce((a,b)=>a+b.dx,0)/period;
+  for(let i=period;i<dxArr.length;i++) adx=(adx*(period-1)+dxArr[i].dx)/period;
+  const last=dxArr[dxArr.length-1];
+  return { adx, plusDI:last.pdi, minusDI:last.mdi };
+}
+
 function calcVolRatio(volumes) {
   if(volumes.length<21) return 1;
   const avg=volumes.slice(-21,-1).reduce((a,b)=>a+b,0)/20;
@@ -961,7 +1215,7 @@ function updateTrendFilterUI(assetKey,filter) {
 }
 
 function updateBTCContext() {
-  ['ETH','SOL'].forEach(key=>{
+  ['ETH','SOL','XRP','DOGE','ADA'].forEach(key=>{
     const tEl=document.getElementById('btcCtxTrend'+key);
     const pEl=document.getElementById('btcCtxPrice'+key);
     const rEl=document.getElementById('btcCtxRsi'+key);
@@ -1011,7 +1265,7 @@ function updateIndicatorsUI(key,d) {
 
 // ===================== SIGNAL GENERATION =====================
 function generateSignal(key, d, bulls, bears) {
-  const {rsi,ema20,ema50,macd,atr,price,volRatio,support,resist,div,pattern,funding,oi} = d;
+  const {rsi,ema20,ema50,macd,atr,adx,rangeRatio,price,volRatio,support,resist,div,pattern,funding,oi} = d;
 
   const filter = computeTrendFilter(key);
   updateTrendFilterUI(key,filter);
@@ -1089,6 +1343,29 @@ function generateSignal(key, d, bulls, bears) {
   if(rsiBlocksLong&&effectiveLong>=MIN_SCORE&&effectiveLong>effectiveShort) {
     return renderBlocked(key,`RSI ${rsi.toFixed(1)} — перекуплен, лонг опасен. `+longReasons.join(' • '),`⚠ RSI ${rsi.toFixed(1)} > 65 — лонг заблокирован`,longScore,MAX,price);
   }
+
+  // === ADX SIDEWAYS FILTER ===
+  // ADX < 20: рынок в боковике — все сигналы запрещены
+  // ADX 20-25: слабый тренд — снижаем порог уверенности
+  const adxVal = adx ? adx.adx : 0;
+  const isSideways  = adxVal < 20;
+  const isWeakTrend = adxVal >= 20 && adxVal < 25;
+  // Фильтр диапазона: если диапазон 20 свечей < 3×ATR — боковик
+  const rangeIsTight = (rangeRatio || 0) < 1;
+  const marketIsFlat = isSideways || rangeIsTight;
+
+  if(marketIsFlat && (effectiveLong>=MIN_SCORE||effectiveShort>=MIN_SCORE)) {
+    const adxStr = adxVal.toFixed(1);
+    const rangeStr = rangeRatio ? (rangeRatio*100).toFixed(0)+'%' : '--';
+    const reason = isSideways
+      ? `ADX ${adxStr} < 20 — рынок в боковике, сигналы ненадёжны`
+      : `Диапазон ${rangeStr} < 3×ATR — рынок сжатый`;
+    return renderBlocked(key,
+      reason + (effectiveLong>effectiveShort ? '. '+longReasons.join(' • ') : '. '+shortReasons.join(' • ')),
+      `📊 ${reason}`,
+      Math.max(effectiveLong,effectiveShort), MAX, price);
+  }
+
   // Trend filter blocks
   if(!filter.longOk&&effectiveLong>=MIN_SCORE&&effectiveLong>effectiveShort) {
     return renderBlocked(key,filter.label+'. '+longReasons.join(' • '),'🚫 '+filter.label,longScore,MAX,price);
@@ -1126,10 +1403,12 @@ function generateSignal(key, d, bulls, bears) {
 
     if(lastSignals[key]!=='LONG') {
       const sig={asset:key,dir:'LONG',entry:entry.toFixed(0),sl:sl.toFixed(0),tp1:tp1.toFixed(0),tp2:tp2.toFixed(0),rr,time:new Date().toISOString(),result:'open',atr:atrPctStr};
-      recordSignal(sig);
-      sendTG(`🟢 СИГНАЛ ЛОНГ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп (ATR): $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n📈 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bull'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${longReasons.join('\n• ')}`);
-      lastSignals[key]='LONG';
-      addLog(`ЛОНГ ${key} $${entry.toFixed(0)} SL:$${sl.toFixed(0)}`,'ok');
+      const recorded = recordSignal(sig);
+      if (recorded) {
+        sendTG(`🟢 СИГНАЛ ЛОНГ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп (ATR): $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n📈 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bull'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${longReasons.join('\n• ')}`);
+        lastSignals[key]='LONG';
+        addLog(`ЛОНГ ${key} $${entry.toFixed(0)} SL:$${sl.toFixed(0)}`,'ok');
+      }
     }
 
   } else if(effectiveShort>=MIN_SCORE&&effectiveShort>effectiveLong&&filter.shortOk) {
@@ -1156,10 +1435,12 @@ function generateSignal(key, d, bulls, bears) {
 
     if(lastSignals[key]!=='SHORT') {
       const sig={asset:key,dir:'SHORT',entry:entry.toFixed(0),sl:sl.toFixed(0),tp1:tp1.toFixed(0),tp2:tp2.toFixed(0),rr,time:new Date().toISOString(),result:'open',atr:atrPctStr};
-      recordSignal(sig);
-      sendTG(`🔴 СИГНАЛ ШОРТ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп (ATR): $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n📉 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bear'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${shortReasons.join('\n• ')}`);
-      lastSignals[key]='SHORT';
-      addLog(`ШОРТ ${key} $${entry.toFixed(0)} SL:$${sl.toFixed(0)}`,'ok');
+      const recorded = recordSignal(sig);
+      if (recorded) {
+        sendTG(`🔴 СИГНАЛ ШОРТ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп (ATR): $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n📉 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bear'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${shortReasons.join('\n• ')}`);
+        lastSignals[key]='SHORT';
+        addLog(`ШОРТ ${key} $${entry.toFixed(0)} SL:$${sl.toFixed(0)}`,'ok');
+      }
     }
 
   } else {
@@ -1218,12 +1499,23 @@ function setStrengthDots(key,score,max,type) {
 
 // ===================== SIGNAL TRACKER =====================
 function recordSignal(sig) {
+  // Не записывать если по этому активу уже есть открытый сигнал
+  const alreadyOpen = openSignals.some(s => s.asset === sig.asset && s.result === 'open');
+  if (alreadyOpen) return false;
+
+  // Cooldown: не записывать если прошло меньше 4 свечей
+  const cooldown = getCooldownMs();
+  const now = Date.now();
+  if (now - (lastSignalTime[sig.asset] || 0) < cooldown) return false;
+
+  lastSignalTime[sig.asset] = now;
   signalHistory.unshift(sig);
   if(signalHistory.length>50) signalHistory.pop();
   openSignals.unshift({...sig, candles:0});
   if(openSignals.length>20) openSignals.pop();
   saveTracker();
   renderTracker();
+  return true;
 }
 
 function checkSignalResults(key, currentPrice) {
@@ -1245,6 +1537,9 @@ function checkSignalResults(key, currentPrice) {
       sig.result=result;
       const idx=signalHistory.findIndex(s=>s.time===sig.time&&s.asset===sig.asset);
       if(idx>=0) signalHistory[idx].result=result;
+      // Сбрасываем lastSignals — актив снова может давать сигналы
+      lastSignals[sig.asset]='';
+      lastSignalTime[sig.asset]=0;
       addLog(`${result==='win'?'✅':'❌'} ${sig.dir} ${sig.asset} — ${result==='win'?'ПОБЕДА':'ПОТЕРЯ'}`,'ok');
       saveTracker();
       renderTracker();
@@ -1264,6 +1559,9 @@ function checkSignalExpiry() {
       sig.result='expired';
       const idx=signalHistory.findIndex(s=>s.time===sig.time&&s.asset===sig.asset);
       if(idx>=0) signalHistory[idx].result='expired';
+      // Сбрасываем — после истечения можно давать новый сигнал
+      lastSignals[sig.asset]='';
+      lastSignalTime[sig.asset]=0;
       sendTG(`⏰ Сигнал устарел: ${sig.dir} ${sig.asset} $${sig.entry} — цена не достигла уровней за ${maxCandles} свечей`);
       addLog(`Сигнал ${sig.dir} ${sig.asset} устарел`,'warn');
       changed=true;
