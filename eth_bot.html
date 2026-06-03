@@ -225,7 +225,7 @@ main{padding:10px;max-width:480px;margin:0 auto;position:relative;z-index:1}
 <body>
 
 <header>
-  <div class="logo">CRYPTO<em>/</em>SIG <small>v4.3</small></div>
+  <div class="logo">CRYPTO<em>/</em>SIG <small>v4.4</small></div>
   <div class="hdr-right">
     <div class="tf-tabs">
       <div class="tf-tab active" onclick="switchTF('15')" id="tf15">15M</div>
@@ -695,8 +695,13 @@ let btcMarketState = { trend:'neut', rsi:50, price:0 };
 let allData = { ETH:{}, BTC:{}, SOL:{}, XRP:{}, DOGE:{}, ADA:{} };
 // Signal tracker [{asset,dir,entry,sl,tp1,tp2,time,result,price_at_check}]
 let signalHistory = JSON.parse(localStorage.getItem('signalHistory') || '[]');
-// Active open signals for expiry check
-let openSignals = JSON.parse(localStorage.getItem('openSignals') || '[]');
+let openSignals   = JSON.parse(localStorage.getItem('openSignals')   || '[]');
+
+// Очищаем мусорные сигналы с нулевой ценой (баг старых версий)
+signalHistory = signalHistory.filter(s => parseFloat(s.entry) > 0.001);
+openSignals   = openSignals.filter(s   => parseFloat(s.entry) > 0.001);
+localStorage.setItem('signalHistory', JSON.stringify(signalHistory));
+localStorage.setItem('openSignals',   JSON.stringify(openSignals));
 
 const ASSETS = [
   { key:'ETH',  symbol:'ETHUSDT',  decimals:2 },
@@ -724,7 +729,7 @@ function saveSettings() {
 }
 
 function startBot() {
-  addLog('Бот v4.3 — ETH BTC SOL XRP DOGE ADA', 'ok');
+  addLog('Бот v4.4 — фикс цен DOGE/XRP/ADA', 'ok');
   setStatus('АКТИВЕН', 'ok');
   updateTimeFilter();
   fetchAllData();
@@ -1266,6 +1271,9 @@ function updateIndicatorsUI(key,d) {
 // ===================== SIGNAL GENERATION =====================
 function generateSignal(key, d, bulls, bears) {
   const {rsi,ema20,ema50,macd,atr,adx,rangeRatio,price,volRatio,support,resist,div,pattern,funding,oi} = d;
+  // Правильное количество знаков для каждого актива
+  const assetDec = ASSETS.find(a=>a.key===key)?.decimals ?? 2;
+  const fmt = (n) => '$'+parseFloat(n).toFixed(assetDec);
 
   const filter = computeTrendFilter(key);
   updateTrendFilterUI(key,filter);
@@ -1392,22 +1400,22 @@ function generateSignal(key, d, bulls, bears) {
     badge.textContent='▲ ЛОНГ';
     setStrengthDots(key,longScore,MAX,'long');
     document.getElementById('sigScore'+key).textContent=`Сила: ${longScore}/${MAX}`;
-    document.getElementById('entry'+key).textContent='$'+entry.toFixed(0);
-    document.getElementById('sl'+key).textContent='$'+sl.toFixed(0);
-    document.getElementById('tp1'+key).textContent='$'+tp1.toFixed(0);
-    document.getElementById('tp2'+key).textContent='$'+tp2.toFixed(0);
+    document.getElementById('entry'+key).textContent=fmt(entry);
+    document.getElementById('sl'+key).textContent=fmt(sl);
+    document.getElementById('tp1'+key).textContent=fmt(tp1);
+    document.getElementById('tp2'+key).textContent=fmt(tp2);
     document.getElementById('rr'+key).textContent=`R:R 1:${rr}`;
     document.getElementById('atrBadge'+key).textContent=`ATR ${atrPctStr}`;
     reasonEl.textContent=longReasons.join(' • ');
     updateTabSig(key,'long');
 
     if(lastSignals[key]!=='LONG') {
-      const sig={asset:key,dir:'LONG',entry:entry.toFixed(0),sl:sl.toFixed(0),tp1:tp1.toFixed(0),tp2:tp2.toFixed(0),rr,time:new Date().toISOString(),result:'open',atr:atrPctStr};
+      const sig={asset:key,dir:'LONG',entry:entry.toFixed(assetDec),sl:sl.toFixed(assetDec),tp1:tp1.toFixed(assetDec),tp2:tp2.toFixed(assetDec),rr,time:new Date().toISOString(),result:'open',atr:atrPctStr};
       const recorded = recordSignal(sig);
       if (recorded) {
-        sendTG(`🟢 СИГНАЛ ЛОНГ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп (ATR): $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n📈 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bull'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${longReasons.join('\n• ')}`);
+        sendTG(`🟢 СИГНАЛ ЛОНГ ${key}\n\n💰 Вход: ${fmt(entry)}\n🛑 Стоп (ATR): ${fmt(sl)}\n🎯 ТП1: ${fmt(tp1)}\n🎯 ТП2: ${fmt(tp2)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(assetDec)}/${ema50.toFixed(assetDec)}\n📈 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bull'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${longReasons.join('\n• ')}`);
         lastSignals[key]='LONG';
-        addLog(`ЛОНГ ${key} $${entry.toFixed(0)} SL:$${sl.toFixed(0)}`,'ok');
+        addLog(`ЛОНГ ${key} ${fmt(entry)} SL:${fmt(sl)}`,'ok');
       }
     }
 
@@ -1424,22 +1432,22 @@ function generateSignal(key, d, bulls, bears) {
     badge.textContent='▼ ШОРТ';
     setStrengthDots(key,shortScore,MAX,'short');
     document.getElementById('sigScore'+key).textContent=`Сила: ${shortScore}/${MAX}`;
-    document.getElementById('entry'+key).textContent='$'+entry.toFixed(0);
-    document.getElementById('sl'+key).textContent='$'+sl.toFixed(0);
-    document.getElementById('tp1'+key).textContent='$'+tp1.toFixed(0);
-    document.getElementById('tp2'+key).textContent='$'+tp2.toFixed(0);
+    document.getElementById('entry'+key).textContent=fmt(entry);
+    document.getElementById('sl'+key).textContent=fmt(sl);
+    document.getElementById('tp1'+key).textContent=fmt(tp1);
+    document.getElementById('tp2'+key).textContent=fmt(tp2);
     document.getElementById('rr'+key).textContent=`R:R 1:${rr}`;
     document.getElementById('atrBadge'+key).textContent=`ATR ${atrPctStr}`;
     reasonEl.textContent=shortReasons.join(' • ');
     updateTabSig(key,'short');
 
     if(lastSignals[key]!=='SHORT') {
-      const sig={asset:key,dir:'SHORT',entry:entry.toFixed(0),sl:sl.toFixed(0),tp1:tp1.toFixed(0),tp2:tp2.toFixed(0),rr,time:new Date().toISOString(),result:'open',atr:atrPctStr};
+      const sig={asset:key,dir:'SHORT',entry:entry.toFixed(assetDec),sl:sl.toFixed(assetDec),tp1:tp1.toFixed(assetDec),tp2:tp2.toFixed(assetDec),rr,time:new Date().toISOString(),result:'open',atr:atrPctStr};
       const recorded = recordSignal(sig);
       if (recorded) {
-        sendTG(`🔴 СИГНАЛ ШОРТ ${key}\n\n💰 Вход: $${entry.toFixed(0)}\n🛑 Стоп (ATR): $${sl.toFixed(0)}\n🎯 ТП1: $${tp1.toFixed(0)}\n🎯 ТП2: $${tp2.toFixed(0)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(0)}/${ema50.toFixed(0)}\n📉 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bear'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${shortReasons.join('\n• ')}`);
+        sendTG(`🔴 СИГНАЛ ШОРТ ${key}\n\n💰 Вход: ${fmt(entry)}\n🛑 Стоп (ATR): ${fmt(sl)}\n🎯 ТП1: ${fmt(tp1)}\n🎯 ТП2: ${fmt(tp2)}\n⚖️ R:R 1:${rr}\n📐 ATR: ${atrPctStr}\n\n📊 RSI: ${rsi.toFixed(1)} | EMA20/50: ${ema20.toFixed(assetDec)}/${ema50.toFixed(assetDec)}\n📉 OI: ${oi?.change?.toFixed(1)||'--'}% | Fund: ${((funding?.rate||0)*100).toFixed(4)}%\n${pattern?.dir==='bear'?'🕯 Паттерн: '+pattern.name+'\n':''}\n✅ Фильтр тренда: ${filter.label}\n⚡ ${shortReasons.join('\n• ')}`);
         lastSignals[key]='SHORT';
-        addLog(`ШОРТ ${key} $${entry.toFixed(0)} SL:$${sl.toFixed(0)}`,'ok');
+        addLog(`ШОРТ ${key} ${fmt(entry)} SL:${fmt(sl)}`,'ok');
       }
     }
 
@@ -1449,7 +1457,7 @@ function generateSignal(key, d, bulls, bears) {
     badge.textContent='◈ ОЖИДАНИЕ';
     setStrengthDots(key,Math.max(longScore,shortScore),MAX,'wait');
     document.getElementById('sigScore'+key).textContent=`L:${longScore} S:${shortScore}`;
-    document.getElementById('entry'+key).textContent='$'+price.toFixed(0);
+    document.getElementById('entry'+key).textContent=fmt(price);
     document.getElementById('sl'+key).textContent='--';
     document.getElementById('tp1'+key).textContent='--';
     document.getElementById('tp2'+key).textContent='--';
@@ -1462,6 +1470,8 @@ function generateSignal(key, d, bulls, bears) {
 }
 
 function renderBlocked(key,reason,warnText,score,max,price) {
+  const assetDec = ASSETS.find(a=>a.key===key)?.decimals ?? 2;
+  const fmt = (n) => '$'+parseFloat(n).toFixed(assetDec);
   const card=document.getElementById('signalCard'+key);
   const badge=document.getElementById('signalBadge'+key);
   const trendWarn=document.getElementById('trendWarn'+key);
@@ -1472,7 +1482,7 @@ function renderBlocked(key,reason,warnText,score,max,price) {
   badge.textContent='⛔ ЗАБЛОКИРОВАН';
   setStrengthDots(key,score,max,'wait');
   document.getElementById('sigScore'+key).textContent=`Сила: ${score}/${max}`;
-  document.getElementById('entry'+key).textContent='$'+price.toFixed(0);
+  document.getElementById('entry'+key).textContent=fmt(price);
   document.getElementById('sl'+key).textContent='—';
   document.getElementById('tp1'+key).textContent='—';
   document.getElementById('tp2'+key).textContent='—';
